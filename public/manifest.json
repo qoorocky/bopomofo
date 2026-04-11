@@ -1,0 +1,18 @@
+{
+  "name": "ㄅㄆㄇ學習 — 幼兒注音符號",
+  "short_name": "Bopomoo",
+  "description": "幼兒注音符號互動學習系統",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFF9F0",
+  "theme_color": "#FF6B6B",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
