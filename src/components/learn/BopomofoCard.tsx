@@ -136,16 +136,34 @@ export default function BopomofoCard({ symbolId, allSymbolIds, onClose }: Bopomo
             <IconClose size={18} color="#666" />
           </button>
 
-          {/* Step indicator */}
-          <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
-            <div style={{
-              width: 8, height: 8, borderRadius: '50%',
-              backgroundColor: COLORS.primary,
-            }} />
-            <div style={{
-              width: 8, height: 8, borderRadius: '50%',
-              backgroundColor: step === 'word' ? COLORS.secondary : '#DDDDDD',
-            }} />
+          {/* Step indicator (clickable) */}
+          <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+            <button
+              onClick={() => setStep('phoneme')}
+              title="注音"
+              style={{
+                width: 10, height: 10, borderRadius: '50%',
+                backgroundColor: step === 'phoneme' ? COLORS.primary : '#DDDDDD',
+                border: 'none', cursor: 'pointer', padding: 0,
+                touchAction: 'manipulation',
+                transition: 'background-color 0.2s',
+              }}
+            />
+            <button
+              onClick={() => {
+                markPhonemeHeard(symbol.id);
+                setStep('word');
+                setTimeout(() => playWord(symbol.exampleWord), 200);
+              }}
+              title="詞彙"
+              style={{
+                width: 10, height: 10, borderRadius: '50%',
+                backgroundColor: step === 'word' ? COLORS.secondary : '#DDDDDD',
+                border: 'none', cursor: 'pointer', padding: 0,
+                touchAction: 'manipulation',
+                transition: 'background-color 0.2s',
+              }}
+            />
           </div>
 
           <AnimatePresence mode="wait">
@@ -234,8 +252,21 @@ export default function BopomofoCard({ symbolId, allSymbolIds, onClose }: Bopomo
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, width: '100%' }}
               >
                 {/* Step label */}
-                <div style={{ fontSize: '0.85rem', color: '#999', fontWeight: 600 }}>
-                  第二步：詞彙連結
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <button
+                    onClick={() => setStep('phoneme')}
+                    style={{
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      fontSize: '1rem', color: '#AAA', padding: '0 4px',
+                      touchAction: 'manipulation',
+                    }}
+                    aria-label="Back to phoneme"
+                  >
+                    ←
+                  </button>
+                  <div style={{ fontSize: '0.85rem', color: '#999', fontWeight: 600 }}>
+                    第二步：詞彙連結
+                  </div>
                 </div>
 
                 {/* Symbol (smaller) + emoji + word */}
