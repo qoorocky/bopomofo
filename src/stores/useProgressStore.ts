@@ -67,7 +67,7 @@ export const useProgressStore = create<ProgressState>()(
       resetProgress: () => set({ ...initialState }),
     }),
     {
-      name: 'bopomoo-progress',
+      name: 'bopomofo-progress',
     },
   ),
 );

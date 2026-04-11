@@ -1,6 +1,15 @@
-function playBeep(freq: number, duration: number) {
+let sharedCtx: AudioContext | null = null;
+
+function getAudioCtx(): AudioContext {
   const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-  const ctx = new AudioCtx();
+  if (!sharedCtx || sharedCtx.state === 'closed') {
+    sharedCtx = new AudioCtx();
+  }
+  return sharedCtx;
+}
+
+function playBeep(freq: number, duration: number) {
+  const ctx = getAudioCtx();
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
   osc.connect(gain);

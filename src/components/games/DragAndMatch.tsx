@@ -103,13 +103,24 @@ function DroppableTarget({ symbol, matched }: DroppableTargetProps) {
   );
 }
 
+function initRound() {
+  const symbols = pickRandomSymbols(4);
+  return { symbols, targets: [...symbols].sort(() => Math.random() - 0.5) };
+}
+
 export default function DragAndMatch({ onComplete }: DragAndMatchProps) {
   const { playEffect } = useAudio();
-  const [symbols] = useState(() => pickRandomSymbols(4));
-  const [targets] = useState(() => [...symbols].sort(() => Math.random() - 0.5));
+  const [{ symbols, targets }, setRound] = useState(initRound);
   const [matched, setMatched] = useState<Set<string>>(new Set());
   const [showBurst, setShowBurst] = useState(false);
   const [done, setDone] = useState(false);
+
+  function handleReset() {
+    setRound(initRound());
+    setMatched(new Set());
+    setShowBurst(false);
+    setDone(false);
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -168,24 +179,42 @@ export default function DragAndMatch({ onComplete }: DragAndMatchProps) {
             ))}
           </div>
         </motion.div>
-        <button
-          onClick={() => onComplete(matched.size)}
-          style={{
-            height: 56,
-            minWidth: 160,
-            borderRadius: BORDER_RADIUS.lg,
-            backgroundColor: COLORS.secondary,
-            color: COLORS.white,
-            border: 'none',
-            fontSize: '1.1rem',
-            fontWeight: 700,
-            cursor: 'pointer',
-            touchAction: 'manipulation',
-            boxShadow: SHADOW.md,
-          }}
-        >
-          回遊戲
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%', maxWidth: 280 }}>
+          <button
+            onClick={handleReset}
+            style={{
+              height: 56,
+              borderRadius: BORDER_RADIUS.lg,
+              backgroundColor: COLORS.primary,
+              color: COLORS.white,
+              border: 'none',
+              fontSize: '1.1rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              touchAction: 'manipulation',
+              boxShadow: SHADOW.md,
+            }}
+          >
+            再玩一次
+          </button>
+          <button
+            onClick={() => onComplete(matched.size)}
+            style={{
+              height: 56,
+              borderRadius: BORDER_RADIUS.lg,
+              backgroundColor: COLORS.secondary,
+              color: COLORS.white,
+              border: 'none',
+              fontSize: '1.1rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              touchAction: 'manipulation',
+              boxShadow: SHADOW.md,
+            }}
+          >
+            回遊戲
+          </button>
+        </div>
       </div>
     );
   }

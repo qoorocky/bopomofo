@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { BOPOMOFO_SYMBOLS, type BopomofoSymbol } from '../../constants/bopomofo';
 import { useAudio } from '../../hooks/useAudio';
@@ -29,41 +29,49 @@ function generateOptions(correct: BopomofoSymbol): BopomofoSymbol[] {
 
 type QuestionMode = 'phoneme' | 'word';
 
-function pickQuestion(qIndex: number): { correct: BopomofoSymbol; options: BopomofoSymbol[]; mode: QuestionMode } {
-  const correct = BOPOMOFO_SYMBOLS[Math.floor(Math.random() * BOPOMOFO_SYMBOLS.length)];
-  const options = generateOptions(correct);
-  // First 2 questions use phoneme mode, remaining use word mode
-  const mode: QuestionMode = qIndex < 2 ? 'phoneme' : 'word';
-  return { correct, options, mode };
+interface Question {
+  correct: BopomofoSymbol;
+  options: BopomofoSymbol[];
+  mode: QuestionMode;
+}
+
+/** 預先產生 TOTAL_QUESTIONS 題，確保每題符號不重複 */
+function generateQuestions(): Question[] {
+  const shuffled = [...BOPOMOFO_SYMBOLS].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, TOTAL_QUESTIONS).map((correct, i) => ({
+    correct,
+    options: generateOptions(correct),
+    mode: (i < 2 ? 'phoneme' : 'word') as QuestionMode,
+  }));
 }
 
 export default function ListenAndTap({ onComplete }: ListenAndTapProps) {
   const { playWord, playPhoneme, playEffect } = useAudio();
+  const questionsRef = useRef<Question[]>(generateQuestions());
   const [phase, setPhase] = useState<'playing' | 'result'>('playing');
   const [currentQ, setCurrentQ] = useState(0);
   const [score, setScore] = useState(0);
   const [answered, setAnswered] = useState<string | null>(null);
   const [showBurst, setShowBurst] = useState(false);
-  const [question, setQuestion] = useState(() => pickQuestion(0));
+  const [question, setQuestion] = useState<Question>(() => questionsRef.current[0]);
 
-  function playQuestion(q: typeof question) {
+  const playQuestion = useCallback((q: Question) => {
     if (q.mode === 'phoneme') {
       playPhoneme(q.correct.symbol);
     } else {
       playWord(q.correct.exampleWord);
     }
-  }
+  }, [playPhoneme, playWord]);
 
   const loadNewQuestion = useCallback((nextIndex: number) => {
-    const q = pickQuestion(nextIndex);
+    const q = questionsRef.current[nextIndex];
     setQuestion(q);
     setAnswered(null);
     setTimeout(() => playQuestion(q), 300);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playWord, playPhoneme]);
+  }, [playQuestion]);
 
   useEffect(() => {
-    setTimeout(() => playQuestion(question), 300);
+    setTimeout(() => playQuestion(questionsRef.current[0]), 300);
     // Only on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -94,12 +102,13 @@ export default function ListenAndTap({ onComplete }: ListenAndTapProps) {
   }
 
   function handleReset() {
+    questionsRef.current = generateQuestions();
+    const q = questionsRef.current[0];
     setPhase('playing');
     setCurrentQ(0);
     setScore(0);
     setAnswered(null);
     setShowBurst(false);
-    const q = pickQuestion(0);
     setQuestion(q);
     setTimeout(() => playQuestion(q), 300);
   }

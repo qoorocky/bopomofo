@@ -147,67 +147,61 @@ export default function MemoryFlip({ onComplete }: MemoryFlipProps) {
     (cardId: string) => {
       if (!canFlip) return;
 
-      setCards((prev) => {
-        const card = prev.find((c) => c.id === cardId);
-        if (!card || card.flipped || card.matched) return prev;
-        // Play audio on flip
-        if (card.type === 'symbol') {
-          playPhoneme(card.symbol.symbol);
-        } else {
-          playWord(card.symbol.exampleWord);
-        }
-        return prev.map((c) => (c.id === cardId ? { ...c, flipped: true } : c));
-      });
+      const card = cards.find((c) => c.id === cardId);
+      if (!card || card.flipped || card.matched) return;
+
+      // Play audio on flip
+      if (card.type === 'symbol') {
+        playPhoneme(card.symbol.symbol);
+      } else {
+        playWord(card.symbol.exampleWord);
+      }
 
       if (firstFlipped === null) {
+        setCards(cards.map((c) => (c.id === cardId ? { ...c, flipped: true } : c)));
         setFirstFlipped(cardId);
       } else {
         setCanFlip(false);
+        const first = cards.find((c) => c.id === firstFlipped);
+        if (!first) return;
 
-        setCards((prev) => {
-          const first = prev.find((c) => c.id === firstFlipped);
-          const second = prev.find((c) => c.id === cardId);
-          if (!first || !second) return prev;
+        const flippedCards = cards.map((c) =>
+          c.id === cardId ? { ...c, flipped: true } : c,
+        );
 
-          if (first.symbolId === second.symbolId) {
-            // Match!
-            playEffect('correct');
-            setShowBurst(true);
-            const updated = prev.map((c) =>
-              c.id === firstFlipped || c.id === cardId
-                ? { ...c, flipped: true, matched: true }
-                : c,
+        if (first.symbolId === card.symbolId) {
+          // Match!
+          const matchedCards = flippedCards.map((c) =>
+            c.id === firstFlipped || c.id === cardId ? { ...c, flipped: true, matched: true } : c,
+          );
+          setCards(matchedCards);
+          setFirstFlipped(null);
+          setCanFlip(true);
+          playEffect('correct');
+          setShowBurst(true);
+          if (matchedCards.every((c) => c.matched)) {
+            setTimeout(() => setDone(true), 600);
+          }
+        } else {
+          // No match
+          setCards(flippedCards);
+          playEffect('wrong');
+          setWrongPairs((w) => w + 1);
+          setTimeout(() => {
+            setCards((c) =>
+              c.map((card) =>
+                card.id === firstFlipped || card.id === cardId
+                  ? { ...card, flipped: false }
+                  : card,
+              ),
             );
             setFirstFlipped(null);
             setCanFlip(true);
-            const allMatched = updated.every((c) => c.matched);
-            if (allMatched) {
-              setTimeout(() => setDone(true), 600);
-            }
-            return updated;
-          } else {
-            // No match
-            playEffect('wrong');
-            setWrongPairs((w) => w + 1);
-            setTimeout(() => {
-              setCards((c) =>
-                c.map((card) =>
-                  card.id === firstFlipped || card.id === cardId
-                    ? { ...card, flipped: false }
-                    : card,
-                ),
-              );
-              setFirstFlipped(null);
-              setCanFlip(true);
-            }, 1000);
-            return prev.map((c) =>
-              c.id === cardId ? { ...c, flipped: true } : c,
-            );
-          }
-        });
+          }, 1000);
+        }
       }
     },
-    [canFlip, firstFlipped, playEffect, playPhoneme, playWord],
+    [canFlip, cards, firstFlipped, playEffect, playPhoneme, playWord],
   );
 
   const finalScore = Math.max(1, 6 - wrongPairs);
