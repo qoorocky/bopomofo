@@ -200,6 +200,30 @@ export default function HomePage() {
           </button>
         ))}
       </motion.div>
+
+      {/* DEV ONLY — stroke review shortcut */}
+      {import.meta.env.DEV && (
+        <button
+          onClick={() => navigate('/dev/strokes')}
+          style={{
+            position: 'fixed',
+            bottom: 80,
+            right: 12,
+            padding: '4px 10px',
+            fontSize: '0.72rem',
+            fontWeight: 600,
+            backgroundColor: 'rgba(0,0,0,0.55)',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 8,
+            cursor: 'pointer',
+            zIndex: 999,
+            opacity: 0.7,
+          }}
+        >
+          DEV 筆順審校
+        </button>
+      )}
     </div>
   );
 }
