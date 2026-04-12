@@ -135,7 +135,7 @@ function FlipCard({ card, onClick, disabled }: FlipCardProps) {
 }
 
 export default function MemoryFlip({ onComplete }: MemoryFlipProps) {
-  const { playEffect, playPhoneme, playWord } = useAudio();
+  const { playEffect, playPhoneme, playWord, playSfx } = useAudio();
   const [cards, setCards] = useState<MemoryCard[]>(() => createCards(pickRandomSymbols(6)));
   const [firstFlipped, setFirstFlipped] = useState<string | null>(null);
   const [canFlip, setCanFlip] = useState(true);
@@ -151,6 +151,7 @@ export default function MemoryFlip({ onComplete }: MemoryFlipProps) {
       if (!card || card.flipped || card.matched) return;
 
       // Play audio on flip
+      playSfx('flip');
       if (card.type === 'symbol') {
         playPhoneme(card.symbol.symbol);
       } else {
@@ -178,9 +179,10 @@ export default function MemoryFlip({ onComplete }: MemoryFlipProps) {
           setFirstFlipped(null);
           setCanFlip(true);
           playEffect('correct');
+          playSfx('star');
           setShowBurst(true);
           if (matchedCards.every((c) => c.matched)) {
-            setTimeout(() => setDone(true), 600);
+            setTimeout(() => { setDone(true); playSfx('gameWin'); }, 600);
           }
         } else {
           // No match
@@ -201,7 +203,7 @@ export default function MemoryFlip({ onComplete }: MemoryFlipProps) {
         }
       }
     },
-    [canFlip, cards, firstFlipped, playEffect, playPhoneme, playWord],
+    [canFlip, cards, firstFlipped, playEffect, playPhoneme, playWord, playSfx],
   );
 
   const finalScore = Math.max(1, 6 - wrongPairs);

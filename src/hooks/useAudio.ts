@@ -1,3 +1,6 @@
+import { playSfx, isSfxMissing } from './useSoundEffect';
+import { useAudioSettingsStore } from '../stores/useAudioSettingsStore';
+
 let sharedCtx: AudioContext | null = null;
 
 function getAudioCtx(): AudioContext {
@@ -41,13 +44,22 @@ export function useAudio() {
     window.speechSynthesis.speak(utter);
   }
 
+  // Delegates to Howler; falls back to sine-wave beep when the WAV failed to load
   function playEffect(type: 'correct' | 'wrong') {
-    if (type === 'correct') {
-      playBeep(523, 0.15);
-    } else {
-      playBeep(220, 0.3);
+    const { sfxEnabled } = useAudioSettingsStore.getState();
+    if (!sfxEnabled) return;
+
+    playSfx(type);
+
+    // Sine-wave fallback: fires only when Howler reports a load error
+    if (isSfxMissing(type)) {
+      if (type === 'correct') {
+        playBeep(523, 0.15);
+      } else {
+        playBeep(220, 0.3);
+      }
     }
   }
 
-  return { playWord, playPhoneme, playEffect };
+  return { playWord, playPhoneme, playEffect, playSfx };
 }

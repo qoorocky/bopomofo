@@ -109,7 +109,7 @@ function initRound() {
 }
 
 export default function DragAndMatch({ onComplete }: DragAndMatchProps) {
-  const { playEffect } = useAudio();
+  const { playEffect, playSfx } = useAudio();
   const [{ symbols, targets }, setRound] = useState(initRound);
   const [matched, setMatched] = useState<Set<string>>(new Set());
   const [showBurst, setShowBurst] = useState(false);
@@ -136,12 +136,14 @@ export default function DragAndMatch({ onComplete }: DragAndMatchProps) {
 
     if (draggedId === droppedOnId) {
       playEffect('correct');
+      playSfx('pop');
+      playSfx('star');
       setShowBurst(true);
       const newMatched = new Set(matched);
       newMatched.add(draggedId);
       setMatched(newMatched);
       if (newMatched.size === symbols.length) {
-        setTimeout(() => setDone(true), 600);
+        setTimeout(() => { setDone(true); playSfx('gameWin'); }, 600);
       }
     } else {
       playEffect('wrong');

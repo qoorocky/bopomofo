@@ -19,7 +19,7 @@ export default function BopomofoCard({ symbolId, allSymbolIds, onClose }: Bopomo
   const markPhonemeHeard = useProgressStore((s) => s.markPhonemeHeard);
   const phonemeHeard = useProgressStore((s) => s.phonemeHeard);
   const addStars = useProgressStore((s) => s.addStars);
-  const { playWord, playPhoneme } = useAudio();
+  const { playWord, playPhoneme, playSfx } = useAudio();
 
   const symbol = getSymbolById(currentSymbolId);
   const currentIndex = allSymbolIds.indexOf(currentSymbolId);
@@ -66,6 +66,7 @@ export default function BopomofoCard({ symbolId, allSymbolIds, onClose }: Bopomo
     if (symbol) {
       markMastered(symbol.id);
       addStars(2);
+      playSfx('levelUp');
     }
     onClose();
   }

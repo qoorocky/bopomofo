@@ -46,7 +46,7 @@ function generateQuestions(): Question[] {
 }
 
 export default function ListenAndTap({ onComplete }: ListenAndTapProps) {
-  const { playWord, playPhoneme, playEffect } = useAudio();
+  const { playWord, playPhoneme, playEffect, playSfx } = useAudio();
   const questionsRef = useRef<Question[]>(generateQuestions());
   const [phase, setPhase] = useState<'playing' | 'result'>('playing');
   const [currentQ, setCurrentQ] = useState(0);
@@ -71,6 +71,7 @@ export default function ListenAndTap({ onComplete }: ListenAndTapProps) {
   }, [playQuestion]);
 
   useEffect(() => {
+    playSfx('gameStart');
     setTimeout(() => playQuestion(questionsRef.current[0]), 300);
     // Only on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -83,6 +84,7 @@ export default function ListenAndTap({ onComplete }: ListenAndTapProps) {
     const isCorrect = sym.id === question.correct.id;
     if (isCorrect) {
       playEffect('correct');
+      playSfx('star');
       setScore((s) => s + 1);
       setShowBurst(true);
     } else {
@@ -94,6 +96,7 @@ export default function ListenAndTap({ onComplete }: ListenAndTapProps) {
       const nextQ = currentQ + 1;
       if (nextQ >= TOTAL_QUESTIONS) {
         setPhase('result');
+        playSfx('gameWin');
       } else {
         setCurrentQ(nextQ);
         loadNewQuestion(nextQ);

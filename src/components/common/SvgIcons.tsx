@@ -304,6 +304,39 @@ export function IconTrophy({ size = 24, color = '#FFC851', style }: IconProps) {
   );
 }
 
+// ── IconSpeakerOn ─────────────────────────────────────────────────────────────
+export function IconSpeakerOn({ size = 24, color = '#FF6B6B', style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={style}>
+      <path d="M3 9H7L13 4V20L7 15H3V9Z" fill={color} stroke={color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
+      <path d="M16 9C17.5 10 17.5 14 16 15" stroke={color} strokeWidth="2" strokeLinecap="round" fill="none" />
+      <path d="M19 7C21.5 9.5 21.5 14.5 19 17" stroke={color} strokeWidth="2" strokeLinecap="round" fill="none" />
+    </svg>
+  );
+}
+
+// ── IconSpeakerOff ────────────────────────────────────────────────────────────
+export function IconSpeakerOff({ size = 24, color = '#B2BEC3', style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={style}>
+      <path d="M3 9H7L13 4V20L7 15H3V9Z" fill={color} stroke={color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
+      <line x1="17" y1="9" x2="22" y2="17" stroke={color} strokeWidth="2" strokeLinecap="round" />
+      <line x1="22" y1="9" x2="17" y2="17" stroke={color} strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+// ── IconMusic ─────────────────────────────────────────────────────────────────
+export function IconMusic({ size = 24, color = '#FF6B6B', style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={style}>
+      <path d="M9 18V5l12-2v13" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="6" cy="18" r="3" fill={color} fillOpacity="0.3" stroke={color} strokeWidth="2" />
+      <circle cx="18" cy="16" r="3" fill={color} fillOpacity="0.3" stroke={color} strokeWidth="2" />
+    </svg>
+  );
+}
+
 // ── IconClose ─────────────────────────────────────────────────────────────────
 export function IconClose({ size = 24, color = '#666666', style }: IconProps) {
   return (
