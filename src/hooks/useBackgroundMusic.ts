@@ -37,15 +37,15 @@ function startBgm(): void {
   const howl = ensureHowl();
   if (!howl) return;
   if (!howl.playing()) {
-    // Ensure the AudioContext is running before playing (resume is a no-op when
-    // already in 'running' state, so this is safe to call unconditionally).
-    const ctx = (Howler as unknown as { ctx?: AudioContext }).ctx;
-    const play = () => { howl.volume(0); howl.play(); howl.fade(0, effectiveBgmVolume(), 600); };
-    if (ctx && ctx.state === 'suspended') {
-      ctx.resume().then(play).catch(play);
-    } else {
-      play();
-    }
+    howl.volume(0);
+    howl.play();
+    // howl.fade() is blocked while Howler's _playLock=true (which is set when
+    // the AudioContext is still suspended and play() has to wait for 'resume').
+    // Deferring the fade to the 'play' event guarantees _playLock is already
+    // false when fade() runs.
+    howl.once('play', () => {
+      howl.fade(0, effectiveBgmVolume(), 600);
+    });
   }
 }
 
