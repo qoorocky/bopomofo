@@ -7,16 +7,7 @@ import ProgressPage from './pages/ProgressPage';
 import ListenAndTapPage from './pages/games/ListenAndTapPage';
 import DragAndMatchPage from './pages/games/DragAndMatchPage';
 import MemoryFlipPage from './pages/games/MemoryFlipPage';
-
-const devRoutes = import.meta.env.DEV
-  ? [
-      {
-        path: 'dev/strokes',
-        lazy: () =>
-          import('./pages/dev/StrokeReviewPage').then((m) => ({ Component: m.default })),
-      },
-    ]
-  : [];
+import StrokeReviewPage from './pages/dev/StrokeReviewPage';
 
 const router = createBrowserRouter(
   [
@@ -31,7 +22,7 @@ const router = createBrowserRouter(
         { path: 'games/drag', element: <DragAndMatchPage /> },
         { path: 'games/memory', element: <MemoryFlipPage /> },
         { path: 'progress', element: <ProgressPage /> },
-        ...devRoutes,
+        { path: 'dev/strokes', element: <StrokeReviewPage /> },
       ],
     },
   ],
