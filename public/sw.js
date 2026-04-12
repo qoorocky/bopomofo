@@ -1,17 +1,18 @@
 const CACHE = 'bopomoo-v2';
+// Paths are relative to the SW scope (which is /bopomofo/ on GitHub Pages)
 const PRECACHE = [
-  '/',
-  '/index.html',
-  '/audio/sfx/click.wav',
-  '/audio/sfx/flip.wav',
-  '/audio/sfx/correct.wav',
-  '/audio/sfx/wrong.wav',
-  '/audio/sfx/star.wav',
-  '/audio/sfx/gameStart.wav',
-  '/audio/sfx/gameWin.wav',
-  '/audio/sfx/levelUp.wav',
-  '/audio/sfx/countdown.wav',
-  '/audio/sfx/pop.wav',
+  './',
+  './index.html',
+  './audio/sfx/click.wav',
+  './audio/sfx/flip.wav',
+  './audio/sfx/correct.wav',
+  './audio/sfx/wrong.wav',
+  './audio/sfx/star.wav',
+  './audio/sfx/gameStart.wav',
+  './audio/sfx/gameWin.wav',
+  './audio/sfx/levelUp.wav',
+  './audio/sfx/countdown.wav',
+  './audio/sfx/pop.wav',
 ];
 
 self.addEventListener('install', (e) => {
@@ -39,7 +40,7 @@ self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
 
   // BGM: cache-first, populate on first successful fetch
-  if (url.pathname.startsWith('/audio/bgm/')) {
+  if (url.pathname.includes('/audio/bgm/')) {
     e.respondWith(
       caches.match(e.request).then((cached) => {
         if (cached) return cached;
