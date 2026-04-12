@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Howl } from 'howler';
+import { Howl, Howler } from 'howler';
 import { BGM_TRACKS } from '../constants/audioAssets';
 import { useAudioSettingsStore } from '../stores/useAudioSettingsStore';
 
@@ -65,6 +65,14 @@ function resumeBgm(): void {
 export function unlockAudio(): void {
   if (audioUnlocked) return;
   audioUnlocked = true;
+
+  // Resume Howler's global AudioContext — created at import time, suspended by
+  // Chrome's autoplay policy until a user gesture occurs.
+  const ctx = (Howler as unknown as { ctx?: AudioContext }).ctx;
+  if (ctx && ctx.state === 'suspended') {
+    ctx.resume();
+  }
+
   if (pendingPlay) {
     pendingPlay = false;
     startBgm();

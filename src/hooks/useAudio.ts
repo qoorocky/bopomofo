@@ -8,6 +8,10 @@ function getAudioCtx(): AudioContext {
   if (!sharedCtx || sharedCtx.state === 'closed') {
     sharedCtx = new AudioCtx();
   }
+  // Resume if suspended (e.g. created before first user gesture)
+  if (sharedCtx.state === 'suspended') {
+    sharedCtx.resume();
+  }
   return sharedCtx;
 }
 
