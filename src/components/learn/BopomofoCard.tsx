@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import { getSymbolById } from '../../constants/bopomofo';
 import { useProgressStore } from '../../stores/useProgressStore';
 import { useAudio } from '../../hooks/useAudio';
@@ -26,19 +26,22 @@ export default function BopomofoCard({ symbolId, allSymbolIds, onClose }: Bopomo
   const hasPrev = currentIndex > 0;
   const hasNext = currentIndex < allSymbolIds.length - 1;
 
-  // Start at phoneme step unless already heard before
-  const [step, setStep] = useState<'phoneme' | 'word'>(
-    phonemeHeard[currentSymbolId] ? 'word' : 'phoneme'
+  const [displaySide, setDisplaySide] = useState<'phoneme' | 'word'>(
+    phonemeHeard[currentSymbolId] ? 'word' : 'phoneme',
   );
+  const flipControls = useAnimation();
+  const isFlipping = useRef(false);
 
-  // On symbol change: reset step, mark learning, auto-play phoneme
+  // On symbol change: snap back to correct side, mark learning, auto-play
   useEffect(() => {
-    const nextStep = phonemeHeard[currentSymbolId] ? 'word' : 'phoneme';
-    setStep(nextStep);
+    flipControls.set({ rotateY: 0 });
+    isFlipping.current = false;
+    const nextSide = phonemeHeard[currentSymbolId] ? 'word' : 'phoneme';
+    setDisplaySide(nextSide);
     markLearning(currentSymbolId);
     const sym = getSymbolById(currentSymbolId);
     if (sym) {
-      if (nextStep === 'phoneme') {
+      if (nextSide === 'phoneme') {
         setTimeout(() => playPhoneme(sym.symbol), 300);
       } else {
         setTimeout(() => playWord(sym.exampleWord), 300);
@@ -47,11 +50,35 @@ export default function BopomofoCard({ symbolId, allSymbolIds, onClose }: Bopomo
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSymbolId]);
 
-  function handleNextStep() {
-    if (!symbol) return;
-    markPhonemeHeard(symbol.id);
-    setStep('word');
-    setTimeout(() => playWord(symbol.exampleWord), 200);
+  async function handleFlip() {
+    if (isFlipping.current || !symbol) return;
+    isFlipping.current = true;
+    playSfx('flip');
+
+    // Phase 1: fold away (0° → 90°)
+    await flipControls.start({
+      rotateY: 90,
+      transition: { duration: 0.18, ease: 'easeIn' },
+    });
+
+    // Swap content at the invisible midpoint
+    const nextSide = displaySide === 'phoneme' ? 'word' : 'phoneme';
+    setDisplaySide(nextSide);
+    if (nextSide === 'word') {
+      markPhonemeHeard(symbol.id);
+      setTimeout(() => playWord(symbol.exampleWord), 200);
+    } else {
+      setTimeout(() => playPhoneme(symbol.symbol), 200);
+    }
+
+    // Phase 2: unfold from the other side (−90° → 0°)
+    flipControls.set({ rotateY: -90 });
+    await flipControls.start({
+      rotateY: 0,
+      transition: { duration: 0.18, ease: 'easeOut' },
+    });
+
+    isFlipping.current = false;
   }
 
   function handlePrev() {
@@ -92,296 +119,241 @@ export default function BopomofoCard({ symbolId, allSymbolIds, onClose }: Bopomo
           padding: 16,
         }}
       >
+        {/* Outer wrapper — entrance animation, stops backdrop click */}
         <motion.div
-          key={`card-${currentSymbolId}`}
+          key={`modal-${currentSymbolId}`}
           initial={{ opacity: 0, y: 60 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 60 }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           onClick={(e) => e.stopPropagation()}
           style={{
-            background: COLORS.white,
-            borderRadius: 24,
-            padding: 32,
             maxWidth: 360,
             width: '100%',
-            position: 'relative',
-            boxShadow: SHADOW.lg,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: 16,
+            gap: 12,
           }}
         >
-          {/* Close */}
-          <button
-            onClick={onClose}
-            style={{
-              position: 'absolute',
-              top: 12,
-              right: 12,
-              width: 44,
-              height: 44,
-              borderRadius: BORDER_RADIUS.xl,
-              border: 'none',
-              backgroundColor: '#F0F0F0',
-              fontSize: '1.25rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              touchAction: 'manipulation',
-            }}
-            aria-label="Close"
-          >
-            <IconClose size={18} color="#666" />
-          </button>
-
-          {/* Step indicator (clickable) */}
-          <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+          {/* Dot indicators */}
+          <div style={{ display: 'flex', gap: 8 }}>
             <button
-              onClick={() => setStep('phoneme')}
+              onClick={() => { if (displaySide !== 'phoneme') handleFlip(); }}
               title="注音"
               style={{
                 width: 10, height: 10, borderRadius: '50%',
-                backgroundColor: step === 'phoneme' ? COLORS.primary : '#DDDDDD',
-                border: 'none', cursor: 'pointer', padding: 0,
+                backgroundColor: displaySide === 'phoneme' ? COLORS.primary : 'rgba(255,255,255,0.4)',
+                border: 'none',
+                cursor: displaySide !== 'phoneme' ? 'pointer' : 'default',
+                padding: 0,
                 touchAction: 'manipulation',
                 transition: 'background-color 0.2s',
               }}
             />
             <button
-              onClick={() => {
-                markPhonemeHeard(symbol.id);
-                setStep('word');
-                setTimeout(() => playWord(symbol.exampleWord), 200);
-              }}
+              onClick={() => { if (displaySide !== 'word') handleFlip(); }}
               title="詞彙"
               style={{
                 width: 10, height: 10, borderRadius: '50%',
-                backgroundColor: step === 'word' ? COLORS.secondary : '#DDDDDD',
-                border: 'none', cursor: 'pointer', padding: 0,
+                backgroundColor: displaySide === 'word' ? COLORS.secondary : 'rgba(255,255,255,0.4)',
+                border: 'none',
+                cursor: displaySide !== 'word' ? 'pointer' : 'default',
+                padding: 0,
                 touchAction: 'manipulation',
                 transition: 'background-color 0.2s',
               }}
             />
           </div>
 
-          <AnimatePresence mode="wait">
-            {step === 'phoneme' ? (
-              <motion.div
-                key="phoneme"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, width: '100%' }}
+          {/* Perspective wrapper + flip card */}
+          <div style={{ perspective: '1200px', width: '100%' }}>
+            <motion.div
+              animate={flipControls}
+              onClick={handleFlip}
+              style={{
+                background: COLORS.white,
+                borderRadius: 24,
+                padding: '40px 32px 28px',
+                width: '100%',
+                position: 'relative',
+                boxShadow: SHADOW.lg,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 16,
+                cursor: 'pointer',
+                transformOrigin: 'center center',
+                boxSizing: 'border-box',
+              }}
+            >
+              {/* Close — stopPropagation so it never triggers flip */}
+              <button
+                onClick={(e) => { e.stopPropagation(); onClose(); }}
+                style={{
+                  position: 'absolute',
+                  top: 12,
+                  right: 12,
+                  width: 44,
+                  height: 44,
+                  borderRadius: BORDER_RADIUS.xl,
+                  border: 'none',
+                  backgroundColor: '#F0F0F0',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  touchAction: 'manipulation',
+                }}
+                aria-label="Close"
               >
-                {/* Step label */}
-                <div style={{ fontSize: '0.85rem', color: '#999', fontWeight: 600 }}>
-                  第一步：認識發音
-                </div>
+                <IconClose size={18} color="#666" />
+              </button>
 
-                {/* Large symbol */}
-                <div style={{ fontSize: '7rem', fontWeight: 700, color: symbol.color, lineHeight: 1 }}>
-                  {symbol.symbol}
-                </div>
+              {/* ── Front face: 認識發音 ── */}
+              {displaySide === 'phoneme' && (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, width: '100%' }}>
+                  <div style={{ fontSize: '0.85rem', color: '#999', fontWeight: 600 }}>
+                    第一步：認識發音
+                  </div>
 
-                {/* Hint */}
-                <div style={{
-                  fontSize: '1rem',
-                  color: COLORS.text,
-                  textAlign: 'center',
-                  lineHeight: 1.5,
-                  padding: '0 8px',
-                }}>
-                  這是 <strong style={{ color: symbol.color }}>{symbol.symbol}</strong> 的聲音，跟著唸唸看！
-                </div>
+                  <div style={{ fontSize: '7rem', fontWeight: 700, color: symbol.color, lineHeight: 1 }}>
+                    {symbol.symbol}
+                  </div>
 
-                {/* Play phoneme button */}
-                <button
-                  onClick={() => playPhoneme(symbol.symbol)}
-                  style={{
-                    height: 80,
-                    width: 80,
-                    borderRadius: '50%',
-                    backgroundColor: COLORS.primary,
-                    color: COLORS.white,
-                    border: 'none',
-                    fontSize: '2.25rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    touchAction: 'manipulation',
-                    boxShadow: SHADOW.md,
-                  }}
-                  aria-label="Play phoneme"
-                >
-                  <IconSpeaker size={32} color={COLORS.white} />
-                </button>
+                  <div style={{ fontSize: '1rem', color: COLORS.text, textAlign: 'center', lineHeight: 1.5, padding: '0 8px' }}>
+                    這是 <strong style={{ color: symbol.color }}>{symbol.symbol}</strong> 的聲音，跟著唸唸看！
+                  </div>
 
-                {/* Next step button — always enabled */}
-                <button
-                  onClick={handleNextStep}
-                  style={{
-                    height: 56,
-                    minWidth: 180,
-                    borderRadius: BORDER_RADIUS.lg,
-                    backgroundColor: COLORS.secondary,
-                    color: COLORS.white,
-                    border: 'none',
-                    fontSize: '1.1rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    touchAction: 'manipulation',
-                    boxShadow: SHADOW.sm,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 8,
-                  }}
-                >
-                  下一步 →
-                </button>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="word"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, width: '100%' }}
-              >
-                {/* Step label */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <button
-                    onClick={() => setStep('phoneme')}
+                    onClick={(e) => { e.stopPropagation(); playPhoneme(symbol.symbol); }}
                     style={{
-                      background: 'none', border: 'none', cursor: 'pointer',
-                      fontSize: '1rem', color: '#AAA', padding: '0 4px',
+                      height: 80, width: 80,
+                      borderRadius: '50%',
+                      backgroundColor: COLORS.primary,
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                       touchAction: 'manipulation',
+                      boxShadow: SHADOW.md,
                     }}
-                    aria-label="Back to phoneme"
+                    aria-label="Play phoneme"
                   >
-                    ←
+                    <IconSpeaker size={32} color={COLORS.white} />
                   </button>
+
+                  <div style={{ fontSize: '0.78rem', color: '#C0C0C0', letterSpacing: '0.02em' }}>
+                    點擊卡片翻面查看詞彙 →
+                  </div>
+                </div>
+              )}
+
+              {/* ── Back face: 詞彙連結 ── */}
+              {displaySide === 'word' && (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, width: '100%' }}>
                   <div style={{ fontSize: '0.85rem', color: '#999', fontWeight: 600 }}>
                     第二步：詞彙連結
                   </div>
+
+                  <div style={{ fontSize: '3.5rem', fontWeight: 700, color: symbol.color, lineHeight: 1 }}>
+                    {symbol.symbol}
+                  </div>
+                  <div style={{ fontSize: '4rem', lineHeight: 1 }}>{symbol.exampleEmoji}</div>
+                  <div style={{ fontSize: '1.75rem', fontWeight: 700, color: COLORS.text }}>
+                    {symbol.exampleWord}
+                  </div>
+
+                  <div style={{ fontSize: '0.95rem', color: '#666', textAlign: 'center', lineHeight: 1.5, padding: '0 8px' }}>
+                    <strong style={{ color: symbol.color }}>{symbol.exampleWord}</strong> 的第一個音就是 <strong style={{ color: symbol.color }}>{symbol.symbol}</strong>！
+                  </div>
+
+                  <button
+                    onClick={(e) => { e.stopPropagation(); playWord(symbol.exampleWord); }}
+                    style={{
+                      height: 72, minWidth: 160,
+                      borderRadius: BORDER_RADIUS.lg,
+                      backgroundColor: COLORS.primary,
+                      color: COLORS.white,
+                      border: 'none',
+                      fontSize: '1.25rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                      touchAction: 'manipulation',
+                      boxShadow: SHADOW.md,
+                    }}
+                  >
+                    <IconSpeaker size={24} color={COLORS.white} />
+                    播放
+                  </button>
+
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleMastered(); }}
+                    style={{
+                      height: 56, minWidth: 160,
+                      borderRadius: BORDER_RADIUS.lg,
+                      backgroundColor: COLORS.accent,
+                      color: COLORS.text,
+                      border: 'none',
+                      fontSize: '1.1rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      touchAction: 'manipulation',
+                      boxShadow: SHADOW.sm,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                    }}
+                  >
+                    已學會！
+                    <IconStar size={20} />
+                  </button>
                 </div>
+              )}
+            </motion.div>
+          </div>
 
-                {/* Symbol (smaller) + emoji + word */}
-                <div style={{ fontSize: '3.5rem', fontWeight: 700, color: symbol.color, lineHeight: 1 }}>
-                  {symbol.symbol}
-                </div>
-                <div style={{ fontSize: '4rem', lineHeight: 1 }}>{symbol.exampleEmoji}</div>
-                <div style={{ fontSize: '1.75rem', fontWeight: 700, color: COLORS.text }}>
-                  {symbol.exampleWord}
-                </div>
-
-                {/* Hint */}
-                <div style={{
-                  fontSize: '0.95rem',
-                  color: '#666',
-                  textAlign: 'center',
-                  lineHeight: 1.5,
-                  padding: '0 8px',
-                }}>
-                  <strong style={{ color: symbol.color }}>{symbol.exampleWord}</strong> 的第一個音就是 <strong style={{ color: symbol.color }}>{symbol.symbol}</strong>！
-                </div>
-
-                {/* Play word button */}
-                <button
-                  onClick={() => playWord(symbol.exampleWord)}
-                  style={{
-                    height: 72,
-                    minWidth: 160,
-                    borderRadius: BORDER_RADIUS.lg,
-                    backgroundColor: COLORS.primary,
-                    color: COLORS.white,
-                    border: 'none',
-                    fontSize: '1.25rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 8,
-                    touchAction: 'manipulation',
-                    boxShadow: SHADOW.md,
-                  }}
-                >
-                  <IconSpeaker size={24} color={COLORS.white} />
-                  播放
-                </button>
-
-                {/* Mastered button */}
-                <button
-                  onClick={handleMastered}
-                  style={{
-                    height: 56,
-                    minWidth: 160,
-                    borderRadius: BORDER_RADIUS.lg,
-                    backgroundColor: COLORS.accent,
-                    color: COLORS.text,
-                    border: 'none',
-                    fontSize: '1.1rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    touchAction: 'manipulation',
-                    boxShadow: SHADOW.sm,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 8,
-                  }}
-                >
-                  已學會！
-                  <IconStar size={20} />
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Symbol navigation */}
+          {/* Symbol navigation — outside the card, on dark backdrop */}
           {allSymbolIds.length > 1 && (
-            <div style={{ display: 'flex', gap: 16, width: '100%', justifyContent: 'space-between', marginTop: 4 }}>
+            <div style={{ display: 'flex', gap: 16, width: '100%', justifyContent: 'space-between' }}>
               <button
                 onClick={handlePrev}
                 disabled={!hasPrev}
                 style={{
-                  height: 48,
-                  minWidth: 80,
+                  height: 48, minWidth: 80,
                   borderRadius: BORDER_RADIUS.md,
-                  border: '2px solid #E0E0E0',
-                  backgroundColor: hasPrev ? '#F8F8F8' : '#F0F0F0',
-                  color: hasPrev ? COLORS.text : '#CCCCCC',
+                  border: '2px solid rgba(255,255,255,0.25)',
+                  backgroundColor: hasPrev ? 'rgba(255,255,255,0.12)' : 'transparent',
+                  color: hasPrev ? COLORS.white : 'rgba(255,255,255,0.25)',
                   fontSize: '1.5rem',
                   cursor: hasPrev ? 'pointer' : 'default',
                   touchAction: 'manipulation',
-                  opacity: hasPrev ? 1 : 0.4,
                 }}
                 aria-label="Previous symbol"
               >
                 ←
               </button>
-              <span style={{ display: 'flex', alignItems: 'center', fontSize: '0.9rem', color: '#999' }}>
+              <span style={{ display: 'flex', alignItems: 'center', fontSize: '0.9rem', color: 'rgba(255,255,255,0.6)' }}>
                 {currentIndex + 1} / {allSymbolIds.length}
               </span>
               <button
                 onClick={handleNext}
                 disabled={!hasNext}
                 style={{
-                  height: 48,
-                  minWidth: 80,
+                  height: 48, minWidth: 80,
                   borderRadius: BORDER_RADIUS.md,
-                  border: '2px solid #E0E0E0',
-                  backgroundColor: hasNext ? '#F8F8F8' : '#F0F0F0',
-                  color: hasNext ? COLORS.text : '#CCCCCC',
+                  border: '2px solid rgba(255,255,255,0.25)',
+                  backgroundColor: hasNext ? 'rgba(255,255,255,0.12)' : 'transparent',
+                  color: hasNext ? COLORS.white : 'rgba(255,255,255,0.25)',
                   fontSize: '1.5rem',
                   cursor: hasNext ? 'pointer' : 'default',
                   touchAction: 'manipulation',
-                  opacity: hasNext ? 1 : 0.4,
                 }}
                 aria-label="Next symbol"
               >
