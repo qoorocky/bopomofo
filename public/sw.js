@@ -39,6 +39,9 @@ self.addEventListener('fetch', (e) => {
 
   const url = new URL(e.request.url);
 
+  // Cache API only supports http/https — skip other schemes (chrome-extension, etc.)
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
+
   // BGM: cache-first, populate on first successful fetch
   if (url.pathname.includes('/audio/bgm/')) {
     e.respondWith(
