@@ -8,6 +8,18 @@ import ListenAndTapPage from './pages/games/ListenAndTapPage';
 import DragAndMatchPage from './pages/games/DragAndMatchPage';
 import MemoryFlipPage from './pages/games/MemoryFlipPage';
 
+const devRoutes = import.meta.env.DEV
+  ? [
+      {
+        path: 'dev/strokes',
+        lazy: async () => {
+          const { default: StrokeReviewPage } = await import('./pages/dev/StrokeReviewPage');
+          return { element: <StrokeReviewPage /> };
+        },
+      },
+    ]
+  : [];
+
 const router = createBrowserRouter(
   [
     {
@@ -21,6 +33,7 @@ const router = createBrowserRouter(
         { path: 'games/drag', element: <DragAndMatchPage /> },
         { path: 'games/memory', element: <MemoryFlipPage /> },
         { path: 'progress', element: <ProgressPage /> },
+        ...devRoutes,
       ],
     },
   ],
