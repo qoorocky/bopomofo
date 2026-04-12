@@ -12,10 +12,8 @@ const devRoutes = import.meta.env.DEV
   ? [
       {
         path: 'dev/strokes',
-        lazy: async () => {
-          const { default: StrokeReviewPage } = await import('./pages/dev/StrokeReviewPage');
-          return { element: <StrokeReviewPage /> };
-        },
+        lazy: () =>
+          import('./pages/dev/StrokeReviewPage').then((m) => ({ Component: m.default })),
       },
     ]
   : [];
