@@ -1,7 +1,10 @@
 /**
  * Phase 2: Playwright script — draw Bopomofo stroke paths in /dev/strokes editor
  *
- * Usage:  node scripts/draw-strokes.mjs
+ * Usage:
+ *   node scripts/draw-strokes.mjs               # 只畫尚未有路徑的字（安全模式）
+ *   node scripts/draw-strokes.mjs --only b,p,m  # 只重畫指定的字
+ *   node scripts/draw-strokes.mjs --all          # 強制覆蓋全部 37 個字
  *
  * Prerequisites:
  *   - Dev server running on http://localhost:5173
@@ -308,6 +311,39 @@ async function drawStroke(page, canvasBox, waypoints) {
 }
 
 async function main() {
+  // ── Parse CLI arguments ───────────────────────────────────────────────────
+  const args = process.argv.slice(2);
+  const forceAll = args.includes('--all');
+  const onlyArg = args.find(a => a.startsWith('--only=') || a === '--only');
+  let onlyIds = null;
+  if (onlyArg) {
+    const val = onlyArg.startsWith('--only=')
+      ? onlyArg.slice(7)
+      : args[args.indexOf('--only') + 1];
+    onlyIds = val ? val.split(',').map(s => s.trim()).filter(Boolean) : null;
+  }
+
+  // Read existing strokeData.ts to detect which entries already have real paths
+  const existingSrc = readFileSync(STROKE_DATA_PATH, 'utf8');
+
+  // Decide which symbols to (re)draw
+  const toProcess = Object.keys(WAYPOINTS).filter(id => {
+    if (onlyIds) return onlyIds.includes(id);       // --only list
+    if (forceAll) return true;                       // --all: overwrite everything
+    // Default (safe mode): skip if entry already has non-empty paths
+    const escapedId = id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = new RegExp(`\\b${escapedId}:\\s*\\[[\\s\\S]*?'M `, 'm');
+    return !pattern.test(existingSrc);               // only draw if no 'M ...' paths yet
+  });
+
+  if (toProcess.length === 0) {
+    console.log('All entries already have paths. Use --all to overwrite, or --only=id1,id2 to target specific symbols.');
+    process.exit(0);
+  }
+
+  console.log(`Mode: ${forceAll ? '--all' : onlyIds ? `--only ${onlyIds.join(',')}` : 'safe (empty entries only)'}`);
+  console.log(`Processing ${toProcess.length} symbol(s): ${toProcess.join(', ')}\n`);
+
   const browser = await chromium.launch({ headless: false });
   const page = await browser.newPage();
   await page.setViewportSize({ width: 1280, height: 960 });
@@ -320,7 +356,8 @@ async function main() {
   const results = {};
   const errors = [];
 
-  for (const [symbolId, strokes] of Object.entries(WAYPOINTS)) {
+  for (const symbolId of toProcess) {
+    const strokes = WAYPOINTS[symbolId];
     console.log(`\nDrawing: ${symbolId} (${strokes.length} strokes expected)`);
 
     try {
