@@ -85,7 +85,7 @@ function rdp(pts: Point[], eps: number): Point[] {
   return [pts[0], pts[pts.length - 1]];
 }
 
-/** Convert a point array → compact SVG path (M + L/H/V segments) */
+/** Convert a point array → compact SVG path (M + L/H/V segments) — for preview */
 function pointsToPath(pts: Point[]): string {
   if (pts.length < 2) return '';
   let d = `M ${pts[0].x},${pts[0].y}`;
@@ -96,6 +96,43 @@ function pointsToPath(pts: Point[]): string {
     else if (prev.x === x) d += ` V ${y}`;
     else d += ` L ${x},${y}`;
   }
+  return d;
+}
+
+/**
+ * Convert simplified points → smooth SVG path using midpoint-control Q spline.
+ * Each interior point becomes a quadratic bezier control point;
+ * endpoints of each segment are the midpoints between consecutive control points.
+ * Collinear 2-point strokes are emitted as compact H/V/L instead.
+ */
+function pointsToSmoothPath(pts: Point[]): string {
+  if (pts.length < 2) return '';
+  const r = (v: number) => Math.round(v);
+
+  // Only 2 points → straight line (already simplified by RDP)
+  if (pts.length === 2) {
+    const [a, b] = pts;
+    if (a.y === b.y) return `M ${a.x},${a.y} H ${b.x}`;
+    if (a.x === b.x) return `M ${a.x},${a.y} V ${b.y}`;
+    return `M ${a.x},${a.y} L ${b.x},${b.y}`;
+  }
+
+  // Start at midpoint between pt[0] and pt[1] for a balanced open spline
+  const sx = r((pts[0].x + pts[1].x) / 2);
+  const sy = r((pts[0].y + pts[1].y) / 2);
+  let d = `M ${pts[0].x},${pts[0].y} Q ${pts[0].x},${pts[0].y} ${sx},${sy}`;
+
+  for (let i = 1; i < pts.length - 1; i++) {
+    const cx = pts[i].x;
+    const cy = pts[i].y;
+    const ex = r((pts[i].x + pts[i + 1].x) / 2);
+    const ey = r((pts[i].y + pts[i + 1].y) / 2);
+    d += ` Q ${cx},${cy} ${ex},${ey}`;
+  }
+
+  // End exactly at the last point
+  const last = pts[pts.length - 1];
+  d += ` Q ${last.x},${last.y} ${last.x},${last.y}`;
   return d;
 }
 
@@ -139,8 +176,8 @@ export default function StrokeReviewPage() {
     setIsDrawing(false);
     setRawPtsDisplay([]);
     if (raw.length >= 2) {
-      const simplified = rdp(raw, 2.5);
-      const path = pointsToPath(simplified);
+      const simplified = rdp(raw, 3.5);          // higher ε → fewer corners
+      const path = pointsToSmoothPath(simplified); // Q spline → smooth curves
       if (path) setDone(prev => [...prev, path]);
     }
   }
