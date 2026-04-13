@@ -186,8 +186,8 @@ export default function StrokeReviewPage() {
   // ── SVG mouse handlers ────────────────────────────────────────────────────────
 
   function handleSvgMouseDown(e: React.MouseEvent<SVGSVGElement>) {
+    e.preventDefault();   // always block native drag/selection in every mode
     if (drawMode !== 'F') return;
-    e.preventDefault();
     const pt = toViewBox(e);
     rawPtsRef.current = [pt];
     setRawPtsDisplay([pt]);
@@ -429,12 +429,14 @@ export default function StrokeReviewPage() {
                       backgroundColor: '#FAFAFA',
                       userSelect: 'none',
                       WebkitUserSelect: 'none',
+                      touchAction: 'none',  // prevent browser scroll/pan on touch
                     }}
                     onClick={handleClick}
                     onMouseDown={handleSvgMouseDown}
                     onMouseMove={handleSvgMouseMove}
                     onMouseUp={handleSvgMouseUp}
                     onMouseLeave={() => { setHover(null); }}
+                    onDragStart={(e) => e.preventDefault()}
                   >
                     {/* Ghost character — SVG text centered in viewBox */}
                     <text
