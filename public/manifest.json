@@ -1,8 +1,8 @@
 {
   "name": "ㄅㄆㄇ學習 — 幼兒注音符號",
-  "short_name": "Bopomoo",
+  "short_name": "Bopomofo",
   "description": "幼兒注音符號互動學習系統",
-  "start_url": "/",
+  "start_url": "/bopomofo/",
   "display": "standalone",
   "background_color": "#FFF9F0",
   "theme_color": "#FF6B6B",
