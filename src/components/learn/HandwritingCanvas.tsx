@@ -17,7 +17,6 @@ export default function HandwritingCanvas({ refPaths, accentColor }: Props) {
   const [totalScore, setTotalScore] = useState<number | null>(null);
   const [showRef, setShowRef] = useState(false);
 
-  // Refs for stable, closure-safe access in pointer handlers
   const svgRef = useRef<SVGSVGElement>(null);
   const livePolyRef = useRef<SVGPolylineElement>(null);
   const isDrawingRef = useRef(false);
@@ -51,7 +50,6 @@ export default function HandwritingCanvas({ refPaths, accentColor }: Props) {
     const prev = currentPtsRef.current[currentPtsRef.current.length - 1];
     if (Math.hypot(pt.x - prev.x, pt.y - prev.y) < 0.8) return;
     currentPtsRef.current.push(pt);
-    // Direct DOM update — avoids React re-render on every pointer move
     if (livePolyRef.current) {
       livePolyRef.current.setAttribute('points', ptsToPolyline(currentPtsRef.current));
     }
@@ -67,7 +65,6 @@ export default function HandwritingCanvas({ refPaths, accentColor }: Props) {
 
     if (pts.length < 2) return;
 
-    // Sequential: match stroke[i] against refPaths[i] to respect stroke order
     const strokeIndex = strokesRef.current.length;
     const score = strokeIndex < refPaths.length
       ? scoreOneStroke(pts, refPaths[strokeIndex])
@@ -78,7 +75,6 @@ export default function HandwritingCanvas({ refPaths, accentColor }: Props) {
     setStrokes([...strokesRef.current]);
     setStrokeScores([...strokeScoresRef.current]);
 
-    // Auto-score when the drawn count reaches the reference count
     if (strokesRef.current.length >= refPaths.length && refPaths.length > 0) {
       setTotalScore(scoreStrokes(strokesRef.current, refPaths));
     }
@@ -95,31 +91,35 @@ export default function HandwritingCanvas({ refPaths, accentColor }: Props) {
     setTotalScore(null);
   }
 
+  const allDone = strokes.length >= refPaths.length && refPaths.length > 0;
   const stars = totalScore !== null ? scoreStars(totalScore) : 0;
-  const starBg = totalScore === null ? '' : totalScore >= 85 ? '#E8F8F0' : totalScore >= 60 ? '#FEF9E7' : '#FDEDEC';
-  const starFg = totalScore === null ? '' : totalScore >= 85 ? '#27AE60' : totalScore >= 60 ? '#E67E22' : '#C0392B';
+  const scoreColor = totalScore === null ? accentColor
+    : totalScore >= 85 ? '#27AE60'
+    : totalScore >= 60 ? '#E67E22'
+    : '#C0392B';
+
+  // Label row — mirrors StrokeOrderDisplay's progress label
+  const label = strokes.length === 0
+    ? '開始練習吧'
+    : allDone && totalScore !== null
+    ? `${totalScore} 分 ${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}`
+    : `第 ${strokes.length} / ${refPaths.length} 畫`;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, width: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, width: '100%' }}>
 
-      {/* Section header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, alignSelf: 'flex-start', paddingLeft: 2 }}>
-        <span style={{ fontSize: '0.85rem', color: '#888' }}>✍️ 跟著寫寫看</span>
-        <span style={{ fontSize: '0.75rem', color: '#BBB' }}>（{refPaths.length} 畫）</span>
-      </div>
-
-      {/* Drawing canvas */}
+      {/* Canvas — same 200×200 as the animation canvas */}
       <div style={{
-        position: 'relative',
-        width: '100%',
-        maxWidth: 240,
-        aspectRatio: '1 / 1',
+        width: 200,
+        height: 200,
         borderRadius: BORDER_RADIUS.lg,
-        backgroundColor: '#FAFAFA',
-        border: `2px solid ${totalScore !== null ? starFg : '#E8E8E8'}`,
+        backgroundColor: '#F8F8F8',
+        border: `2px solid ${allDone ? scoreColor : '#E8E8E8'}`,
+        position: 'relative',
         boxShadow: SHADOW.sm,
         overflow: 'hidden',
         transition: 'border-color 0.3s',
+        flexShrink: 0,
       }}>
         <svg
           ref={svgRef}
@@ -131,96 +131,75 @@ export default function HandwritingCanvas({ refPaths, accentColor }: Props) {
           onPointerLeave={finishStroke}
           onPointerCancel={finishStroke}
         >
-          {/* Subtle grid */}
           <line x1="50" y1="5" x2="50" y2="95" stroke="#ECECEC" strokeWidth="0.6" />
           <line x1="5" y1="50" x2="95" y2="50" stroke="#ECECEC" strokeWidth="0.6" />
 
-          {/* Reference strokes (faint overlay) */}
           {showRef && refPaths.map((d, i) => (
-            <path
-              key={i}
-              d={d}
-              stroke={accentColor}
-              strokeWidth={8}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              fill="none"
-              opacity={0.13}
-            />
+            <path key={i} d={d} stroke={accentColor} strokeWidth={8}
+              strokeLinecap="round" strokeLinejoin="round" fill="none" opacity={0.13} />
           ))}
 
-          {/* Completed strokes (color-coded by score) */}
           {strokes.map((pts, i) => (
-            <polyline
-              key={i}
-              points={ptsToPolyline(pts)}
+            <polyline key={i} points={ptsToPolyline(pts)}
               stroke={strokeScoreColor(strokeScores[i] ?? 0)}
-              strokeWidth={7}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              fill="none"
-              opacity={0.88}
-            />
+              strokeWidth={7} strokeLinecap="round" strokeLinejoin="round" fill="none" opacity={0.88} />
           ))}
 
-          {/* Live stroke (updated directly via DOM ref, no re-render) */}
-          <polyline
-            ref={livePolyRef}
-            points=""
-            stroke="#BBBBBB"
-            strokeWidth={7}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            fill="none"
-          />
+          <polyline ref={livePolyRef} points=""
+            stroke="#BBBBBB" strokeWidth={7} strokeLinecap="round" strokeLinejoin="round" fill="none" />
         </svg>
+
+        {/* Hint overlay when nothing drawn */}
+        {strokes.length === 0 && (
+          <div style={{
+            position: 'absolute', inset: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            pointerEvents: 'none',
+          }}>
+            <span style={{ fontSize: '0.8rem', color: '#BBB', backgroundColor: 'rgba(255,255,255,0.85)', padding: '4px 10px', borderRadius: 20 }}>
+              在此手寫
+            </span>
+          </div>
+        )}
       </div>
 
-      {/* Total score badge */}
-      {totalScore !== null && (
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          backgroundColor: starBg,
-          borderRadius: BORDER_RADIUS.md,
-          padding: '7px 18px',
-          fontSize: '0.92rem',
-          fontWeight: 700,
-          color: starFg,
-          letterSpacing: '0.02em',
+      {/* Score dots + label — mirrors StrokeOrderDisplay's progress row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {refPaths.map((_, i) => (
+            <div key={i} style={{
+              width: 10, height: 10, borderRadius: '50%',
+              backgroundColor: i < strokes.length
+                ? strokeScoreColor(strokeScores[i] ?? 0)
+                : '#DDDDDD',
+              transition: 'background-color 0.2s',
+            }} />
+          ))}
+        </div>
+        <span style={{
+          fontSize: '0.82rem',
+          color: allDone && totalScore !== null ? scoreColor : '#999',
+          fontWeight: allDone && totalScore !== null ? 700 : 400,
+          transition: 'color 0.2s',
         }}>
-          <span style={{ fontSize: '1.1rem', letterSpacing: '0.05em' }}>
-            {'★'.repeat(stars)}{'☆'.repeat(3 - stars)}
-          </span>
-          <span>{totalScore} 分</span>
-        </div>
-      )}
+          {label}
+        </span>
+      </div>
 
-      {/* Per-stroke legend (only when strokes exist but total not yet shown) */}
-      {strokes.length > 0 && totalScore === null && (
-        <div style={{ display: 'flex', gap: 12, fontSize: '0.72rem', color: '#AAA' }}>
-          <span style={{ color: '#2ECC71' }}>● 優秀 ≥75</span>
-          <span style={{ color: '#F39C12' }}>● 還行 40–74</span>
-          <span style={{ color: '#E74C3C' }}>● 再試試 &lt;40</span>
-        </div>
-      )}
-
-      {/* Action buttons */}
+      {/* Action buttons — same height (48px) as watch mode's action button */}
       <div style={{ display: 'flex', gap: 8 }}>
         <button
           onClick={clear}
           style={{
-            height: 36,
-            padding: '0 14px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            height: 48, padding: '0 24px',
             borderRadius: BORDER_RADIUS.md,
             backgroundColor: 'transparent',
             color: COLORS.textLight,
-            border: '1.5px solid #DDD',
-            fontSize: '0.85rem',
-            fontWeight: 600,
-            cursor: 'pointer',
-            touchAction: 'manipulation',
+            border: '2px solid #DDD',
+            fontSize: '0.95rem', fontWeight: 700,
+            cursor: 'pointer', touchAction: 'manipulation',
+            whiteSpace: 'nowrap', flexShrink: 0,
           }}
         >
           清除重寫
@@ -228,17 +207,16 @@ export default function HandwritingCanvas({ refPaths, accentColor }: Props) {
         <button
           onClick={() => setShowRef(v => !v)}
           style={{
-            height: 36,
-            padding: '0 14px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            height: 48, padding: '0 24px',
             borderRadius: BORDER_RADIUS.md,
             backgroundColor: showRef ? `${accentColor}22` : 'transparent',
             color: showRef ? accentColor : COLORS.textLight,
-            border: `1.5px solid ${showRef ? accentColor : '#DDD'}`,
-            fontSize: '0.85rem',
-            fontWeight: 600,
-            cursor: 'pointer',
-            touchAction: 'manipulation',
+            border: `2px solid ${showRef ? accentColor : '#DDD'}`,
+            fontSize: '0.95rem', fontWeight: 700,
+            cursor: 'pointer', touchAction: 'manipulation',
             transition: 'all 0.2s',
+            whiteSpace: 'nowrap', flexShrink: 0,
           }}
         >
           {showRef ? '隱藏參考' : '顯示參考'}
