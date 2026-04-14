@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { STROKE_DATA } from '../../constants/strokeData';
 import { COLORS, BORDER_RADIUS, SHADOW } from '../../styles/theme';
+import HandwritingCanvas from './HandwritingCanvas';
 
 interface Props {
   symbolId: string;
@@ -184,6 +185,12 @@ export default function StrokeOrderDisplay({ symbolId, symbol, color }: Props) {
           重新播放
         </button>
       )}
+
+      {/* Divider */}
+      <div style={{ width: '100%', height: 1, backgroundColor: '#EBEBEB', margin: '4px 0' }} />
+
+      {/* Handwriting practice */}
+      <HandwritingCanvas refPaths={strokes} accentColor={color} />
     </div>
   );
 }
