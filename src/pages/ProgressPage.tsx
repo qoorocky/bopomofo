@@ -13,6 +13,7 @@ const STATUS_CONFIG = {
 export default function ProgressPage() {
   const totalStars = useProgressStore((s) => s.totalStars);
   const symbolStatus = useProgressStore((s) => s.symbolStatus);
+  const gameScores = useProgressStore((s) => s.gameScores);
   const resetProgress = useProgressStore((s) => s.resetProgress);
 
   const masteredCount = Object.values(symbolStatus).filter((v) => v === 'mastered').length;
@@ -107,6 +108,53 @@ export default function ProgressPage() {
           </div>
         ))}
       </motion.div>
+
+      {/* Game scores */}
+      {Object.keys(gameScores).length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35, duration: 0.4 }}
+          style={{ marginBottom: 24 }}
+        >
+          <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: COLORS.text, marginBottom: 12 }}>
+            遊戲最高分
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {[
+              { id: 'listen', name: '聽音選字' },
+              { id: 'drag',   name: '拖拉配對' },
+              { id: 'memory', name: '翻牌記憶' },
+              { id: 'tone',   name: '聲調練習' },
+            ]
+              .filter((g) => gameScores[g.id] !== undefined)
+              .map((g) => (
+                <div
+                  key={g.id}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    backgroundColor: COLORS.white,
+                    borderRadius: BORDER_RADIUS.md,
+                    padding: '10px 16px',
+                    boxShadow: SHADOW.sm,
+                  }}
+                >
+                  <span style={{ fontSize: '0.95rem', color: COLORS.text, fontWeight: 600 }}>
+                    {g.name}
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <IconStar size={18} />
+                    <span style={{ fontSize: '1rem', fontWeight: 700, color: COLORS.accent }}>
+                      {gameScores[g.id]}
+                    </span>
+                  </span>
+                </div>
+              ))}
+          </div>
+        </motion.div>
+      )}
 
       {/* Symbol grid */}
       <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: COLORS.text, marginBottom: 12 }}>

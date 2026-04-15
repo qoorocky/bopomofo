@@ -519,6 +519,33 @@ export function IconMuscle({ size = 24, color = '#FF6B6B', style }: IconProps) {
   );
 }
 
+// ── IconTone ──────────────────────────────────────────────────────────────────
+// Four mini contour lines representing the 4 tones + a dot for neutral
+export function IconTone({ size = 24, color = '#FF6B6B', style }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      style={style}
+    >
+      {/* 1st tone: flat line (top-left) */}
+      <line x1="2" y1="5" x2="9" y2="5" stroke={color} strokeWidth="2" strokeLinecap="round" />
+      {/* 2nd tone: rising line (top-right) */}
+      <line x1="14" y1="8" x2="22" y2="3" stroke={color} strokeWidth="2" strokeLinecap="round" />
+      {/* 3rd tone: dipping curve (bottom-left) */}
+      <path d="M 2 13 Q 5.5 19 9 14" stroke={color} strokeWidth="2" strokeLinecap="round" fill="none" />
+      {/* 4th tone: falling line (bottom-right) */}
+      <line x1="14" y1="13" x2="22" y2="19" stroke={color} strokeWidth="2" strokeLinecap="round" />
+      {/* neutral dot (center) */}
+      <circle cx="12" cy="21" r="1.5" fill={color} />
+    </svg>
+  );
+}
+
 // ── BgCloud ───────────────────────────────────────────────────────────────────
 interface BgCloudProps {
   width?: number;

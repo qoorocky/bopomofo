@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { COLORS, BORDER_RADIUS, SHADOW } from '../styles/theme';
-import { IconSpeaker, IconPuzzle, IconCards } from '../components/common/SvgIcons';
+import { IconSpeaker, IconPuzzle, IconCards, IconTone } from '../components/common/SvgIcons';
 
 interface GameItem {
   id: string;
@@ -37,6 +37,14 @@ const GAMES: GameItem[] = [
     description: '找出配對的注音和圖片！',
     bg: '#FFC851',
     color: '#2D3436',
+  },
+  {
+    id: 'tone',
+    icon: <IconTone size={40} color="#FFFFFF" />,
+    name: '聲調練習',
+    description: '學會一二三四聲和輕聲！',
+    bg: '#A78BFA',
+    color: '#FFFFFF',
   },
 ];
 
