@@ -32,6 +32,20 @@ export default function AppShell() {
       </main>
       <NavBar />
       <AudioSettingsButton />
+      <span
+        style={{
+          position: 'fixed',
+          bottom: 78,
+          left: 10,
+          fontSize: '0.65rem',
+          color: 'rgba(0,0,0,0.28)',
+          pointerEvents: 'none',
+          userSelect: 'none',
+          letterSpacing: '0.03em',
+        }}
+      >
+        v{__APP_VERSION__}
+      </span>
     </>
   );
 }
