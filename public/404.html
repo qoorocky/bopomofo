@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<script>
+  // GitHub Pages SPA redirect: save the intended path then redirect to base
+  var l = window.location;
+  sessionStorage.setItem(
+    'spa-redirect',
+    l.pathname.slice(1) + (l.search ? '&' + l.search.slice(1) : '') + l.hash
+  );
+  l.replace(
+    l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') + '/bopomofo/'
+  );
+</script>
+</html>

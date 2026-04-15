@@ -1,8 +1,9 @@
-const CACHE = 'bopomoo-v2';
+const CACHE = 'bopomoo-v3';
 // Paths are relative to the SW scope (which is /bopomofo/ on GitHub Pages)
 const PRECACHE = [
   './',
   './index.html',
+  // index.html is explicitly listed so navigation fallback can always find it
   './audio/sfx/click.wav',
   './audio/sfx/flip.wav',
   './audio/sfx/correct.wav',
@@ -42,6 +43,17 @@ self.addEventListener('fetch', (e) => {
   // Cache API only supports http/https — skip other schemes (chrome-extension, etc.)
   if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
 
+  // Navigation requests (HTML page loads / refreshes): serve index.html from cache
+  // This prevents 404s on sub-paths after the SW is installed
+  if (e.request.mode === 'navigate') {
+    e.respondWith(
+      caches.match('./index.html').then(
+        (cached) => cached || fetch(new Request(new URL('./', self.location).href))
+      )
+    );
+    return;
+  }
+
   // BGM: cache-first, populate on first successful fetch
   if (url.pathname.includes('/audio/bgm/')) {
     e.respondWith(
@@ -62,13 +74,15 @@ self.addEventListener('fetch', (e) => {
   e.respondWith(
     caches.match(e.request).then((cached) => {
       if (cached) return cached;
-      return fetch(e.request).then((res) => {
-        if (res.ok) {
-          const clone = res.clone();
-          caches.open(CACHE).then((c) => c.put(e.request, clone));
-        }
-        return res;
-      });
+      return fetch(e.request)
+        .then((res) => {
+          if (res.ok) {
+            const clone = res.clone();
+            caches.open(CACHE).then((c) => c.put(e.request, clone));
+          }
+          return res;
+        })
+        .catch(() => new Response('', { status: 503, statusText: 'Unavailable' }));
     })
   );
 });
