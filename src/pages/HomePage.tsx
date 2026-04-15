@@ -70,15 +70,20 @@ export default function HomePage() {
         overflow: 'hidden',
       }}
     >
-      {/* Background decorations */}
+      {/* Background decorations — single composited layer, no JS animation */}
       <div
         aria-hidden="true"
-        style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          pointerEvents: 'none',
+          contain: 'strict',
+        }}
       >
         {CLOUDS.map((c, i) => (
           <div
             key={i}
-            style={{ position: 'absolute', left: c.left, top: c.top }}
+            style={{ position: 'absolute', left: c.left, top: c.top, transform: 'translateZ(0)' }}
           >
             <BgCloud width={c.width} opacity={c.opacity} />
           </div>
@@ -95,6 +100,7 @@ export default function HomePage() {
               borderRadius: '50%',
               backgroundColor: d.color,
               opacity: 0.55,
+              transform: 'translateZ(0)',
             }}
           />
         ))}
@@ -113,6 +119,7 @@ export default function HomePage() {
           letterSpacing: '0.05em',
           textShadow: '0 2px 0px rgba(255,255,255,0.8)',
           position: 'relative',
+          willChange: 'transform, opacity',
         }}
       >
         ㄅㄆㄇ學習
@@ -121,8 +128,8 @@ export default function HomePage() {
       {/* Mascot */}
       <motion.div
         animate={{ y: [0, -10, 0] }}
-        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-        style={{ lineHeight: 1, userSelect: 'none', position: 'relative' }}
+        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut', delay: 0.6 }}
+        style={{ lineHeight: 1, userSelect: 'none', position: 'relative', willChange: 'transform' }}
         aria-hidden="true"
       >
         <MascotOwl />
@@ -145,6 +152,7 @@ export default function HomePage() {
           alignItems: 'center',
           gap: 8,
           position: 'relative',
+          willChange: 'transform, opacity',
         }}
       >
         <IconStar size={20} />
@@ -163,6 +171,7 @@ export default function HomePage() {
           width: '100%',
           maxWidth: 360,
           position: 'relative',
+          willChange: 'transform, opacity',
         }}
       >
         {BUTTONS.map(({ label, to, bg, color, Icon }) => (
