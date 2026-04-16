@@ -8,6 +8,8 @@ interface ProgressState {
   phonemeHeard: Record<string, boolean>;
   totalStars: number;
   gameScores: Record<string, number>;
+  lastReviewedAt: Record<string, number>;
+  reviewCount: Record<string, number>;
 
   // Actions
   markLearning: (id: string) => void;
@@ -15,6 +17,7 @@ interface ProgressState {
   markPhonemeHeard: (id: string) => void;
   addStars: (count: number) => void;
   updateGameScore: (gameId: string, score: number) => void;
+  recordReview: (id: string) => void;
   resetProgress: () => void;
 }
 
@@ -23,6 +26,8 @@ const initialState = {
   phonemeHeard: {} as Record<string, boolean>,
   totalStars: 0,
   gameScores: {} as Record<string, number>,
+  lastReviewedAt: {} as Record<string, number>,
+  reviewCount: {} as Record<string, number>,
 };
 
 export const useProgressStore = create<ProgressState>()(
@@ -64,10 +69,34 @@ export const useProgressStore = create<ProgressState>()(
           },
         })),
 
+      recordReview: (id) =>
+        set((state) => ({
+          lastReviewedAt: { ...state.lastReviewedAt, [id]: Date.now() },
+          reviewCount: {
+            ...state.reviewCount,
+            [id]: (state.reviewCount[id] ?? 0) + 1,
+          },
+        })),
+
       resetProgress: () => set({ ...initialState }),
     }),
     {
       name: 'bopomofo-progress',
+      version: 2,
+      migrate: (persistedState, version) => {
+        if (typeof persistedState !== 'object' || persistedState === null) {
+          return { ...initialState };
+        }
+        const s = persistedState as Record<string, unknown>;
+        if (version < 2) {
+          return {
+            ...s,
+            lastReviewedAt: {},
+            reviewCount: {},
+          };
+        }
+        return s;
+      },
     },
   ),
 );

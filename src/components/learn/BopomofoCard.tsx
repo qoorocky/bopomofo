@@ -20,6 +20,7 @@ export default function BopomofoCard({ symbolId, allSymbolIds, onClose }: Bopomo
   const markPhonemeHeard = useProgressStore((s) => s.markPhonemeHeard);
   const phonemeHeard = useProgressStore((s) => s.phonemeHeard);
   const addStars = useProgressStore((s) => s.addStars);
+  const recordReview = useProgressStore((s) => s.recordReview);
   const { playWord, playPhoneme, playSfx } = useAudio();
 
   const symbol = getSymbolById(currentSymbolId);
@@ -33,13 +34,14 @@ export default function BopomofoCard({ symbolId, allSymbolIds, onClose }: Bopomo
   const flipControls = useAnimation();
   const isFlipping = useRef(false);
 
-  // On symbol change: snap back to correct side, mark learning, auto-play
+  // On symbol change: snap back to correct side, mark learning, record review, auto-play
   useEffect(() => {
     flipControls.set({ rotateY: 0 });
     isFlipping.current = false;
     const nextSide = phonemeHeard[currentSymbolId] ? 'word' : 'phoneme';
     setDisplaySide(nextSide);
     markLearning(currentSymbolId);
+    recordReview(currentSymbolId);
     const sym = getSymbolById(currentSymbolId);
     if (sym) {
       if (nextSide === 'phoneme') {

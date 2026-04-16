@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useProgressStore } from '../stores/useProgressStore';
@@ -10,6 +11,11 @@ import {
   IconTrophy,
   BgCloud,
 } from '../components/common/SvgIcons';
+import DailyReviewCard from '../components/home/DailyReviewCard';
+import BopomofoCard from '../components/learn/BopomofoCard';
+import { BOPOMOFO_SYMBOLS } from '../constants/bopomofo';
+
+const ALL_SYMBOL_IDS = BOPOMOFO_SYMBOLS.map((s) => s.id);
 
 interface ButtonConfig {
   label: string;
@@ -54,6 +60,8 @@ const DOTS = [
 export default function HomePage() {
   const navigate = useNavigate();
   const totalStars = useProgressStore((s) => s.totalStars);
+  const markLearning = useProgressStore((s) => s.markLearning);
+  const [reviewSymbolId, setReviewSymbolId] = useState<string | null>(null);
 
   return (
     <div
@@ -159,6 +167,21 @@ export default function HomePage() {
         {totalStars} 顆星星
       </motion.div>
 
+      {/* Daily Review */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35, duration: 0.45 }}
+        style={{ width: '100%', maxWidth: 360, position: 'relative', willChange: 'transform, opacity' }}
+      >
+        <DailyReviewCard
+          onSelect={(id) => {
+            markLearning(id);
+            setReviewSymbolId(id);
+          }}
+        />
+      </motion.div>
+
       {/* Navigation buttons */}
       <motion.div
         initial={{ opacity: 0, y: 40 }}
@@ -209,6 +232,15 @@ export default function HomePage() {
           </button>
         ))}
       </motion.div>
+
+      {/* Daily review overlay */}
+      {reviewSymbolId && (
+        <BopomofoCard
+          symbolId={reviewSymbolId}
+          allSymbolIds={ALL_SYMBOL_IDS}
+          onClose={() => setReviewSymbolId(null)}
+        />
+      )}
 
       {/* DEV ONLY — stroke review shortcut */}
       {import.meta.env.DEV && (
