@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { COLORS, BORDER_RADIUS, SHADOW } from '../styles/theme';
-import { IconSpeaker, IconPuzzle, IconCards, IconTone } from '../components/common/SvgIcons';
+import { IconSpeaker, IconPuzzle, IconCards, IconTone, IconCombo } from '../components/common/SvgIcons';
 
 interface GameItem {
   id: string;
@@ -44,6 +44,14 @@ const GAMES: GameItem[] = [
     name: '聲調練習',
     description: '學會一二三四聲和輕聲！',
     bg: '#A78BFA',
+    color: '#FFFFFF',
+  },
+  {
+    id: 'combo',
+    icon: <IconCombo size={40} color="#FFFFFF" />,
+    name: '拼音組合',
+    description: '組合聲母和韻母，拼出完整的音！',
+    bg: '#6EC1E4',
     color: '#FFFFFF',
   },
 ];

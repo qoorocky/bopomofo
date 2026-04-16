@@ -8,6 +8,7 @@ import ListenAndTapPage from './pages/games/ListenAndTapPage';
 import DragAndMatchPage from './pages/games/DragAndMatchPage';
 import MemoryFlipPage from './pages/games/MemoryFlipPage';
 import TonePracticePage from './pages/games/TonePracticePage';
+import ComboPracticePage from './pages/games/ComboPracticePage';
 import StrokeReviewPage from './pages/dev/StrokeReviewPage';
 
 const router = createBrowserRouter(
@@ -23,6 +24,7 @@ const router = createBrowserRouter(
         { path: 'games/drag', element: <DragAndMatchPage /> },
         { path: 'games/memory', element: <MemoryFlipPage /> },
         { path: 'games/tone', element: <TonePracticePage /> },
+        { path: 'games/combo', element: <ComboPracticePage /> },
         { path: 'progress', element: <ProgressPage /> },
         { path: 'dev/strokes', element: <StrokeReviewPage /> },
       ],

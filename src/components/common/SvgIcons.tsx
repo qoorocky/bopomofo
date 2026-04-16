@@ -546,6 +546,30 @@ export function IconTone({ size = 24, color = '#FF6B6B', style }: IconProps) {
   );
 }
 
+// ── IconCombo ─────────────────────────────────────────────────────────────────
+// Two tiles with a "+" between them — represents combining phonemes
+export function IconCombo({ size = 24, color = '#4ECDC4', style }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      style={style}
+    >
+      {/* Left tile */}
+      <rect x="1" y="5" width="9" height="14" rx="2.5" fill={color} fillOpacity="0.2" stroke={color} strokeWidth="2" strokeLinejoin="round" />
+      {/* Right tile */}
+      <rect x="14" y="5" width="9" height="14" rx="2.5" fill={color} fillOpacity="0.2" stroke={color} strokeWidth="2" strokeLinejoin="round" />
+      {/* Plus sign */}
+      <line x1="11" y1="12" x2="13" y2="12" stroke={color} strokeWidth="2" strokeLinecap="round" />
+      <line x1="12" y1="11" x2="12" y2="13" stroke={color} strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 // ── BgCloud ───────────────────────────────────────────────────────────────────
 interface BgCloudProps {
   width?: number;
