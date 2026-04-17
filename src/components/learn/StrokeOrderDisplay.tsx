@@ -87,8 +87,8 @@ export default function StrokeOrderDisplay({ symbolId, symbol, color }: Props) {
             onClick={!allDone ? nextStroke : undefined}
             onKeyDown={(e) => { if (!allDone && (e.key === 'Enter' || e.key === ' ')) nextStroke(); }}
             style={{
-              width: 200,
-              height: 200,
+              width: '100%',
+              aspectRatio: '1 / 1',
               borderRadius: BORDER_RADIUS.lg,
               backgroundColor: '#F8F8F8',
               border: `2px solid ${allDone ? color : '#E8E8E8'}`,

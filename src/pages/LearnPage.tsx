@@ -5,6 +5,8 @@ import { useProgressStore } from '../stores/useProgressStore';
 import { COLORS, BORDER_RADIUS, SHADOW } from '../styles/theme';
 import BopomofoCard from '../components/learn/BopomofoCard';
 
+type LearnMode = 'phoneme' | 'stroke';
+
 const STATUS_BORDER: Record<string, string> = {
   new: '#CCCCCC',
   learning: '#FFC851',
@@ -102,6 +104,7 @@ function SymbolSection({
 
 export default function LearnPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [learnMode, setLearnMode] = useState<LearnMode>('phoneme');
   const markLearning = useProgressStore((s) => s.markLearning);
 
   const consonants = BOPOMOFO_SYMBOLS.filter((s) => s.group === 'consonant');
@@ -124,11 +127,44 @@ export default function LearnPage() {
           fontWeight: 700,
           color: COLORS.text,
           textAlign: 'center',
-          marginBottom: 24,
+          marginBottom: 16,
         }}
       >
         學習注音
       </motion.h1>
+
+      {/* Mode toggle */}
+      <div style={{
+        display: 'flex',
+        borderRadius: BORDER_RADIUS.md,
+        backgroundColor: '#F0F0F0',
+        padding: 3,
+        gap: 2,
+        marginBottom: 24,
+      }}>
+        {(['phoneme', 'stroke'] as const).map((m) => (
+          <button
+            key={m}
+            onClick={() => setLearnMode(m)}
+            style={{
+              flex: 1,
+              height: 42,
+              borderRadius: '9px',
+              border: 'none',
+              backgroundColor: learnMode === m ? COLORS.white : 'transparent',
+              color: learnMode === m ? COLORS.text : COLORS.textLight,
+              fontWeight: learnMode === m ? 700 : 500,
+              fontSize: '1rem',
+              cursor: 'pointer',
+              touchAction: 'manipulation',
+              boxShadow: learnMode === m ? SHADOW.sm : 'none',
+              transition: 'all 0.18s',
+            }}
+          >
+            {m === 'phoneme' ? '🔊 發音練習' : '✏️ 寫字練習'}
+          </button>
+        ))}
+      </div>
 
       <SymbolSection title="聲母（子音）" symbols={consonants} onTileClick={handleTileClick} />
       <SymbolSection title="韻母（母音）" symbols={vowels} onTileClick={handleTileClick} />
@@ -138,6 +174,7 @@ export default function LearnPage() {
           symbolId={selectedId}
           allSymbolIds={allIds}
           onClose={() => setSelectedId(null)}
+          mode={learnMode}
         />
       )}
     </div>

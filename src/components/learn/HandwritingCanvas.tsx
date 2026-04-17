@@ -108,10 +108,9 @@ export default function HandwritingCanvas({ refPaths, accentColor }: Props) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, width: '100%' }}>
 
-      {/* Canvas — same 200×200 as the animation canvas */}
       <div style={{
-        width: 200,
-        height: 200,
+        width: '100%',
+        aspectRatio: '1 / 1',
         borderRadius: BORDER_RADIUS.lg,
         backgroundColor: '#F8F8F8',
         border: `2px solid ${allDone ? scoreColor : '#E8E8E8'}`,

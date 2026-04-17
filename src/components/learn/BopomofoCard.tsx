@@ -11,9 +11,10 @@ interface BopomofoCardProps {
   symbolId: string;
   allSymbolIds: string[];
   onClose: () => void;
+  mode?: 'phoneme' | 'stroke';
 }
 
-export default function BopomofoCard({ symbolId, allSymbolIds, onClose }: BopomofoCardProps) {
+export default function BopomofoCard({ symbolId, allSymbolIds, onClose, mode = 'phoneme' }: BopomofoCardProps) {
   const [currentSymbolId, setCurrentSymbolId] = useState(symbolId);
   const markLearning = useProgressStore((s) => s.markLearning);
   const markMastered = useProgressStore((s) => s.markMastered);
@@ -29,7 +30,7 @@ export default function BopomofoCard({ symbolId, allSymbolIds, onClose }: Bopomo
   const hasNext = currentIndex < allSymbolIds.length - 1;
 
   const [displaySide, setDisplaySide] = useState<'phoneme' | 'word' | 'stroke'>(
-    phonemeHeard[currentSymbolId] ? 'word' : 'phoneme',
+    mode === 'stroke' ? 'stroke' : (phonemeHeard[currentSymbolId] ? 'word' : 'phoneme'),
   );
   const flipControls = useAnimation();
   const isFlipping = useRef(false);
@@ -38,12 +39,12 @@ export default function BopomofoCard({ symbolId, allSymbolIds, onClose }: Bopomo
   useEffect(() => {
     flipControls.set({ rotateY: 0 });
     isFlipping.current = false;
-    const nextSide = phonemeHeard[currentSymbolId] ? 'word' : 'phoneme';
+    const nextSide = mode === 'stroke' ? 'stroke' : (phonemeHeard[currentSymbolId] ? 'word' : 'phoneme');
     setDisplaySide(nextSide);
     markLearning(currentSymbolId);
     recordReview(currentSymbolId);
     const sym = getSymbolById(currentSymbolId);
-    if (sym) {
+    if (sym && nextSide !== 'stroke') {
       if (nextSide === 'phoneme') {
         setTimeout(() => playPhoneme(sym.symbol), 300);
       } else {
@@ -101,6 +102,14 @@ export default function BopomofoCard({ symbolId, allSymbolIds, onClose }: Bopomo
     onClose();
   }
 
+  function handlePhonemeComplete() {
+    if (symbol) {
+      addStars(1);
+      playSfx('correct');
+    }
+    onClose();
+  }
+
   if (!symbol) return null;
 
   return (
@@ -139,60 +148,65 @@ export default function BopomofoCard({ symbolId, allSymbolIds, onClose }: Bopomo
             gap: 12,
           }}
         >
-          {/* Dot indicators */}
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button
-              onClick={() => {
-                if (displaySide !== 'phoneme') {
-                  setDisplaySide('phoneme');
-                  flipControls.set({ rotateY: 0 });
-                  isFlipping.current = false;
-                }
-              }}
-              title="注音"
-              style={{
-                width: 10, height: 10, borderRadius: '50%',
-                backgroundColor: displaySide === 'phoneme' ? COLORS.primary : 'rgba(255,255,255,0.4)',
-                border: 'none',
-                cursor: displaySide !== 'phoneme' ? 'pointer' : 'default',
-                padding: 0,
-                touchAction: 'manipulation',
-                transition: 'background-color 0.2s',
-              }}
-            />
-            <button
-              onClick={() => {
-                if (displaySide !== 'word') {
-                  setDisplaySide('word');
-                  flipControls.set({ rotateY: 0 });
-                  isFlipping.current = false;
-                }
-              }}
-              title="詞彙"
-              style={{
-                width: 10, height: 10, borderRadius: '50%',
-                backgroundColor: displaySide === 'word' ? COLORS.secondary : 'rgba(255,255,255,0.4)',
-                border: 'none',
-                cursor: displaySide !== 'word' ? 'pointer' : 'default',
-                padding: 0,
-                touchAction: 'manipulation',
-                transition: 'background-color 0.2s',
-              }}
-            />
-            <button
-              onClick={() => setDisplaySide('stroke')}
-              title="寫字練習"
-              style={{
-                width: 10, height: 10, borderRadius: '50%',
-                backgroundColor: displaySide === 'stroke' ? COLORS.accent : 'rgba(255,255,255,0.4)',
-                border: 'none',
-                cursor: displaySide !== 'stroke' ? 'pointer' : 'default',
-                padding: 0,
-                touchAction: 'manipulation',
-                transition: 'background-color 0.2s',
-              }}
-            />
-          </div>
+          {/* Dot indicators — hidden in stroke mode */}
+          {mode !== 'stroke' && (
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                onClick={() => {
+                  if (displaySide !== 'phoneme') {
+                    setDisplaySide('phoneme');
+                    flipControls.set({ rotateY: 0 });
+                    isFlipping.current = false;
+                  }
+                }}
+                title="注音"
+                style={{
+                  width: 10, height: 10, borderRadius: '50%',
+                  backgroundColor: displaySide === 'phoneme' ? COLORS.primary : 'rgba(255,255,255,0.4)',
+                  border: 'none',
+                  cursor: displaySide !== 'phoneme' ? 'pointer' : 'default',
+                  padding: 0,
+                  touchAction: 'manipulation',
+                  transition: 'background-color 0.2s',
+                }}
+              />
+              <button
+                onClick={() => {
+                  if (displaySide !== 'word') {
+                    setDisplaySide('word');
+                    flipControls.set({ rotateY: 0 });
+                    isFlipping.current = false;
+                  }
+                }}
+                title="詞彙"
+                style={{
+                  width: 10, height: 10, borderRadius: '50%',
+                  backgroundColor: displaySide === 'word' ? COLORS.secondary : 'rgba(255,255,255,0.4)',
+                  border: 'none',
+                  cursor: displaySide !== 'word' ? 'pointer' : 'default',
+                  padding: 0,
+                  touchAction: 'manipulation',
+                  transition: 'background-color 0.2s',
+                }}
+              />
+              {/* stroke dot only in non-phoneme mode (legacy / full mode) */}
+              {mode !== 'phoneme' && (
+                <button
+                  onClick={() => setDisplaySide('stroke')}
+                  title="寫字練習"
+                  style={{
+                    width: 10, height: 10, borderRadius: '50%',
+                    backgroundColor: displaySide === 'stroke' ? COLORS.accent : 'rgba(255,255,255,0.4)',
+                    border: 'none',
+                    cursor: displaySide !== 'stroke' ? 'pointer' : 'default',
+                    padding: 0,
+                    touchAction: 'manipulation',
+                    transition: 'background-color 0.2s',
+                  }}
+                />
+              )}
+            </div>
+          )}
 
           {/* Flip card (phoneme / word) or Stroke practice panel */}
           {displaySide !== 'stroke' ? (
@@ -321,27 +335,51 @@ export default function BopomofoCard({ symbolId, allSymbolIds, onClose }: Bopomo
                       播放
                     </button>
 
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setDisplaySide('stroke'); }}
-                      style={{
-                        height: 56, minWidth: 160,
-                        borderRadius: BORDER_RADIUS.lg,
-                        backgroundColor: COLORS.accent,
-                        color: COLORS.text,
-                        border: 'none',
-                        fontSize: '1.1rem',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        touchAction: 'manipulation',
-                        boxShadow: SHADOW.sm,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 8,
-                      }}
-                    >
-                      寫字練習 →
-                    </button>
+                    {mode === 'phoneme' ? (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handlePhonemeComplete(); }}
+                        style={{
+                          height: 56, minWidth: 160,
+                          borderRadius: BORDER_RADIUS.lg,
+                          backgroundColor: COLORS.accent,
+                          color: COLORS.text,
+                          border: 'none',
+                          fontSize: '1.1rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          touchAction: 'manipulation',
+                          boxShadow: SHADOW.sm,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 8,
+                        }}
+                      >
+                        👍 好了！
+                      </button>
+                    ) : (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setDisplaySide('stroke'); }}
+                        style={{
+                          height: 56, minWidth: 160,
+                          borderRadius: BORDER_RADIUS.lg,
+                          backgroundColor: COLORS.accent,
+                          color: COLORS.text,
+                          border: 'none',
+                          fontSize: '1.1rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          touchAction: 'manipulation',
+                          boxShadow: SHADOW.sm,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 8,
+                        }}
+                      >
+                        寫字練習 →
+                      </button>
+                    )}
                   </div>
                 )}
               </motion.div>
@@ -385,9 +423,20 @@ export default function BopomofoCard({ symbolId, allSymbolIds, onClose }: Bopomo
                 <IconClose size={18} color="#666" />
               </button>
 
-              <div style={{ fontSize: '0.85rem', color: '#999', fontWeight: 600 }}>
-                第三步：寫字練習
-              </div>
+              {mode === 'stroke' ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ fontSize: '2.5rem', fontWeight: 700, color: symbol.color, lineHeight: 1 }}>
+                    {symbol.symbol}
+                  </div>
+                  <div style={{ fontSize: '0.85rem', color: '#999', fontWeight: 600 }}>
+                    寫字練習
+                  </div>
+                </div>
+              ) : (
+                <div style={{ fontSize: '0.85rem', color: '#999', fontWeight: 600 }}>
+                  第三步：寫字練習
+                </div>
+              )}
 
               <StrokeOrderDisplay
                 symbolId={symbol.id}
