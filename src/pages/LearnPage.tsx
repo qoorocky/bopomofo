@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { BOPOMOFO_SYMBOLS, type BopomofoSymbol } from '../constants/bopomofo';
 import { useProgressStore } from '../stores/useProgressStore';
 import { COLORS, BORDER_RADIUS, SHADOW } from '../styles/theme';
+import { IconSpeaker, IconPencil } from '../components/common/SvgIcons';
 import BopomofoCard from '../components/learn/BopomofoCard';
 
 type LearnMode = 'phoneme' | 'stroke';
@@ -146,22 +147,25 @@ export default function LearnPage() {
           <button
             key={m}
             onClick={() => setLearnMode(m)}
+            aria-label={m === 'phoneme' ? '發音練習' : '寫字練習'}
             style={{
               flex: 1,
-              height: 42,
+              height: 48,
               borderRadius: '9px',
               border: 'none',
               backgroundColor: learnMode === m ? COLORS.white : 'transparent',
-              color: learnMode === m ? COLORS.text : COLORS.textLight,
-              fontWeight: learnMode === m ? 700 : 500,
-              fontSize: '1rem',
               cursor: 'pointer',
               touchAction: 'manipulation',
               boxShadow: learnMode === m ? SHADOW.sm : 'none',
               transition: 'all 0.18s',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
-            {m === 'phoneme' ? '🔊 發音練習' : '✏️ 寫字練習'}
+            {m === 'phoneme'
+              ? <IconSpeaker size={28} color={learnMode === m ? COLORS.primary : COLORS.textLight} />
+              : <IconPencil size={28} color={learnMode === m ? COLORS.text : COLORS.textLight} />}
           </button>
         ))}
       </div>

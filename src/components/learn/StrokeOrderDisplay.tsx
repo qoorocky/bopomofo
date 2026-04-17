@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { STROKE_DATA } from '../../constants/strokeData';
 import { COLORS, BORDER_RADIUS, SHADOW } from '../../styles/theme';
+import { IconEye, IconPencil, IconPlay, IconReplay } from '../common/SvgIcons';
 import HandwritingCanvas from './HandwritingCanvas';
 
 interface Props {
@@ -58,22 +59,25 @@ export default function StrokeOrderDisplay({ symbolId, symbol, color }: Props) {
           <button
             key={m}
             onClick={() => setMode(m)}
+            aria-label={m === 'watch' ? '示範' : '練習'}
             style={{
               flex: 1,
-              height: 34,
+              height: 40,
               borderRadius: '9px',
               border: 'none',
               backgroundColor: mode === m ? COLORS.white : 'transparent',
-              color: mode === m ? COLORS.text : COLORS.textLight,
-              fontWeight: mode === m ? 700 : 500,
-              fontSize: '0.88rem',
               cursor: 'pointer',
               touchAction: 'manipulation',
               boxShadow: mode === m ? SHADOW.sm : 'none',
               transition: 'all 0.18s',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
-            {m === 'watch' ? '👁 示範' : '✍️ 練習'}
+            {m === 'watch'
+              ? <IconEye size={22} color={mode === m ? COLORS.text : COLORS.textLight} />
+              : <IconPencil size={22} color={mode === m ? COLORS.text : COLORS.textLight} />}
           </button>
         ))}
       </div>
@@ -149,10 +153,14 @@ export default function StrokeOrderDisplay({ symbolId, symbol, color }: Props) {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                pointerEvents: 'none',
               }}>
-                <span style={{ fontSize: '0.8rem', color: '#BBB', backgroundColor: 'rgba(255,255,255,0.85)', padding: '4px 10px', borderRadius: 20 }}>
-                  點擊開始
-                </span>
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ repeat: Infinity, duration: 1.2, ease: 'easeInOut' }}
+                >
+                  <IconPlay size={48} color="rgba(180,180,180,0.7)" />
+                </motion.div>
               </div>
             )}
           </div>
@@ -186,58 +194,62 @@ export default function StrokeOrderDisplay({ symbolId, symbol, color }: Props) {
           {!allDone ? (
             <button
               onClick={nextStroke}
+              aria-label={revealed === 0 ? '開始示範' : '繼續示範'}
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '0 32px',
-                height: 48,
-                borderRadius: BORDER_RADIUS.md,
+                width: 56, height: 56,
+                borderRadius: '50%',
                 backgroundColor: revealed === 0 ? color : COLORS.secondary,
-                color: COLORS.white,
                 border: 'none',
-                fontSize: '1rem',
-                fontWeight: 700,
                 cursor: 'pointer',
                 touchAction: 'manipulation',
                 boxShadow: SHADOW.sm,
-                whiteSpace: 'nowrap',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 flexShrink: 0,
               }}
             >
-              {revealed === 0 ? '開始示範' : '繼續示範'}
+              <IconPlay size={24} color={COLORS.white} />
             </button>
           ) : (
-            <div style={{ display: 'flex', gap: 10 }}>
-              {([
-                { label: '重新播放', onClick: replay, outlined: true },
-                { label: '開始練習', onClick: () => setMode('practice'), outlined: false },
-              ] as const).map(({ label, onClick, outlined }) => (
-                <button
-                  key={label}
-                  onClick={onClick}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '0 24px',
-                    height: 44,
-                    borderRadius: BORDER_RADIUS.md,
-                    backgroundColor: outlined ? 'transparent' : color,
-                    color: outlined ? color : COLORS.white,
-                    border: outlined ? `2px solid ${color}` : 'none',
-                    fontSize: '0.95rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    touchAction: 'manipulation',
-                    boxShadow: outlined ? 'none' : SHADOW.sm,
-                    whiteSpace: 'nowrap',
-                    flexShrink: 0,
-                  }}
-                >
-                  {label}
-                </button>
-              ))}
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button
+                onClick={replay}
+                aria-label="重新播放"
+                style={{
+                  width: 52, height: 52,
+                  borderRadius: '50%',
+                  backgroundColor: 'transparent',
+                  border: `2px solid ${color}`,
+                  cursor: 'pointer',
+                  touchAction: 'manipulation',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <IconReplay size={22} color={color} />
+              </button>
+              <button
+                onClick={() => setMode('practice')}
+                aria-label="開始練習"
+                style={{
+                  width: 52, height: 52,
+                  borderRadius: '50%',
+                  backgroundColor: color,
+                  border: 'none',
+                  cursor: 'pointer',
+                  touchAction: 'manipulation',
+                  boxShadow: SHADOW.sm,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <IconPencil size={22} color={COLORS.white} />
+              </button>
             </div>
           )}
         </>

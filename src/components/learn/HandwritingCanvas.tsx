@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { type Point, scoreOneStroke, scoreStrokes, strokeScoreColor, scoreStars } from '../../utils/strokeScore';
 import { BORDER_RADIUS, SHADOW, COLORS } from '../../styles/theme';
+import { IconEraser, IconEye, IconEyeOff, IconPencil } from '../common/SvgIcons';
 
 interface Props {
   refPaths: string[];
@@ -155,9 +156,7 @@ export default function HandwritingCanvas({ refPaths, accentColor }: Props) {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             pointerEvents: 'none',
           }}>
-            <span style={{ fontSize: '0.8rem', color: '#BBB', backgroundColor: 'rgba(255,255,255,0.85)', padding: '4px 10px', borderRadius: 20 }}>
-              在此手寫
-            </span>
+            <IconPencil size={48} color="rgba(180,180,180,0.5)" />
           </div>
         )}
       </div>
@@ -185,40 +184,39 @@ export default function HandwritingCanvas({ refPaths, accentColor }: Props) {
         </span>
       </div>
 
-      {/* Action buttons — same height (48px) as watch mode's action button */}
-      <div style={{ display: 'flex', gap: 8 }}>
+      <div style={{ display: 'flex', gap: 12 }}>
         <button
           onClick={clear}
+          aria-label="清除重寫"
           style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            height: 48, padding: '0 24px',
-            borderRadius: BORDER_RADIUS.md,
+            width: 52, height: 52,
+            borderRadius: '50%',
             backgroundColor: 'transparent',
-            color: COLORS.textLight,
             border: '2px solid #DDD',
-            fontSize: '0.95rem', fontWeight: 700,
             cursor: 'pointer', touchAction: 'manipulation',
-            whiteSpace: 'nowrap', flexShrink: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0,
           }}
         >
-          清除重寫
+          <IconEraser size={22} color={COLORS.textLight} />
         </button>
         <button
           onClick={() => setShowRef(v => !v)}
+          aria-label={showRef ? '隱藏參考' : '顯示參考'}
           style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            height: 48, padding: '0 24px',
-            borderRadius: BORDER_RADIUS.md,
+            width: 52, height: 52,
+            borderRadius: '50%',
             backgroundColor: showRef ? `${accentColor}22` : 'transparent',
-            color: showRef ? accentColor : COLORS.textLight,
             border: `2px solid ${showRef ? accentColor : '#DDD'}`,
-            fontSize: '0.95rem', fontWeight: 700,
             cursor: 'pointer', touchAction: 'manipulation',
             transition: 'all 0.2s',
-            whiteSpace: 'nowrap', flexShrink: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0,
           }}
         >
-          {showRef ? '隱藏參考' : '顯示參考'}
+          {showRef
+            ? <IconEyeOff size={22} color={accentColor} />
+            : <IconEye size={22} color={COLORS.textLight} />}
         </button>
       </div>
     </div>

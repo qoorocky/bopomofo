@@ -105,11 +105,8 @@ export default function GamesPage() {
             <span style={{ flexShrink: 0, lineHeight: 1, display: 'flex', alignItems: 'center' }}>
               {game.icon}
             </span>
-            <div>
-              <div style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: 4 }}>
-                {game.name}
-              </div>
-              <div style={{ fontSize: '0.95rem', opacity: 0.9 }}>{game.description}</div>
+            <div style={{ fontSize: '1.25rem', fontWeight: 700 }}>
+              {game.name}
             </div>
           </motion.button>
         ))}

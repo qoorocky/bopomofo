@@ -570,6 +570,96 @@ export function IconCombo({ size = 24, color = '#4ECDC4', style }: IconProps) {
   );
 }
 
+// ── IconPlay ─────────────────────────────────────────────────────────────────
+export function IconPlay({ size = 24, color = '#FF6B6B', style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={style}>
+      <polygon points="6,3 21,12 6,21" fill={color} />
+    </svg>
+  );
+}
+
+// ── IconArrowRight ────────────────────────────────────────────────────────────
+export function IconArrowRight({ size = 24, color = '#FF6B6B', style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={style}>
+      <polyline points="9,18 15,12 9,6" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// ── IconPencil ────────────────────────────────────────────────────────────────
+export function IconPencil({ size = 24, color = '#FF6B6B', style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={style}>
+      <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" fill={color} fillOpacity="0.2" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// ── IconEye ───────────────────────────────────────────────────────────────────
+export function IconEye({ size = 24, color = '#FF6B6B', style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={style}>
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke={color} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="12" cy="12" r="3" fill={color} />
+    </svg>
+  );
+}
+
+// ── IconEyeOff ────────────────────────────────────────────────────────────────
+export function IconEyeOff({ size = 24, color = '#FF6B6B', style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={style}>
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" stroke={color} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" stroke={color} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      <line x1="1" y1="1" x2="23" y2="23" stroke={color} strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+// ── IconReplay ────────────────────────────────────────────────────────────────
+export function IconReplay({ size = 24, color = '#FF6B6B', style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={style}>
+      <polyline points="1,4 1,10 7,10" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M3.51 15a9 9 0 1 0 .49-4.49L1 10" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+    </svg>
+  );
+}
+
+// ── IconEraser ────────────────────────────────────────────────────────────────
+export function IconEraser({ size = 24, color = '#FF6B6B', style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={style}>
+      <rect x="3" y="12" width="18" height="8" rx="2" fill={color} fillOpacity="0.15" stroke={color} strokeWidth="2" />
+      <rect x="3" y="12" width="7" height="8" rx="2" fill={color} fillOpacity="0.45" stroke={color} strokeWidth="2" />
+      <line x1="3" y1="8" x2="21" y2="8" stroke={color} strokeWidth="2" strokeLinecap="round" />
+      <path d="M7 8V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v3" stroke={color} strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+// ── IconTap ───────────────────────────────────────────────────────────────────
+export function IconTap({ size = 24, color = '#FF6B6B', style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={style}>
+      <path d="M9 11V6a3 3 0 1 1 6 0v5" stroke={color} strokeWidth="2" strokeLinecap="round" fill="none" />
+      <path d="M9 11H7.5A2.5 2.5 0 0 0 5 13.5v3A5.5 5.5 0 0 0 10.5 22h3A5.5 5.5 0 0 0 19 16.5V13a2 2 0 0 0-2-2h-2" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill={color} fillOpacity="0.15" />
+    </svg>
+  );
+}
+
+// ── IconThumbUp ───────────────────────────────────────────────────────────────
+export function IconThumbUp({ size = 24, color = '#FF6B6B', style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={style}>
+      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z" fill={color} fillOpacity="0.2" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" fill={color} fillOpacity="0.4" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 // ── BgCloud ───────────────────────────────────────────────────────────────────
 interface BgCloudProps {
   width?: number;

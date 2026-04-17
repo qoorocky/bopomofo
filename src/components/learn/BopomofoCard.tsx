@@ -4,7 +4,7 @@ import { getSymbolById } from '../../constants/bopomofo';
 import { useProgressStore } from '../../stores/useProgressStore';
 import { useAudio } from '../../hooks/useAudio';
 import { COLORS, BORDER_RADIUS, SHADOW } from '../../styles/theme';
-import { IconClose, IconSpeaker, IconStar } from '../common/SvgIcons';
+import { IconClose, IconSpeaker, IconStar, IconThumbUp, IconPencil, IconArrowRight } from '../common/SvgIcons';
 import StrokeOrderDisplay from './StrokeOrderDisplay';
 
 interface BopomofoCardProps {
@@ -255,17 +255,9 @@ export default function BopomofoCard({ symbolId, allSymbolIds, onClose, mode = '
 
                 {/* ── Front face: 認識發音 ── */}
                 {displaySide === 'phoneme' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, width: '100%' }}>
-                    <div style={{ fontSize: '0.85rem', color: '#999', fontWeight: 600 }}>
-                      第一步：認識發音
-                    </div>
-
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, width: '100%' }}>
                     <div style={{ fontSize: '7rem', fontWeight: 700, color: symbol.color, lineHeight: 1 }}>
                       {symbol.symbol}
-                    </div>
-
-                    <div style={{ fontSize: '1rem', color: COLORS.text, textAlign: 'center', lineHeight: 1.5, padding: '0 8px' }}>
-                      這是 <strong style={{ color: symbol.color }}>{symbol.symbol}</strong> 的聲音，跟著唸唸看！
                     </div>
 
                     <button
@@ -287,97 +279,87 @@ export default function BopomofoCard({ symbolId, allSymbolIds, onClose, mode = '
                       <IconSpeaker size={32} color={COLORS.white} />
                     </button>
 
-                    <div style={{ fontSize: '0.78rem', color: '#C0C0C0', letterSpacing: '0.02em' }}>
-                      點擊卡片翻面查看詞彙 →
-                    </div>
+                    <motion.div
+                      animate={{ x: [0, 6, 0] }}
+                      transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}
+                      style={{ color: '#C8C8C8' }}
+                    >
+                      <IconArrowRight size={28} color="#C8C8C8" />
+                    </motion.div>
                   </div>
                 )}
 
                 {/* ── Back face: 詞彙連結 ── */}
                 {displaySide === 'word' && (
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, width: '100%' }}>
-                    <div style={{ fontSize: '0.85rem', color: '#999', fontWeight: 600 }}>
-                      第二步：詞彙連結
-                    </div>
-
-                    <div style={{ fontSize: '3.5rem', fontWeight: 700, color: symbol.color, lineHeight: 1 }}>
-                      {symbol.symbol}
-                    </div>
-                    <div style={{ fontSize: '4rem', lineHeight: 1 }}>{symbol.exampleEmoji}</div>
-                    <div style={{ fontSize: '1.75rem', fontWeight: 700, color: COLORS.text }}>
-                      {symbol.exampleWord}
-                    </div>
-
-                    <div style={{ fontSize: '0.95rem', color: '#666', textAlign: 'center', lineHeight: 1.5, padding: '0 8px' }}>
-                      <strong style={{ color: symbol.color }}>{symbol.exampleWord}</strong> 的第一個音就是 <strong style={{ color: symbol.color }}>{symbol.symbol}</strong>！
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <span style={{ fontSize: '3rem', fontWeight: 700, color: symbol.color, lineHeight: 1 }}>
+                        {symbol.symbol}
+                      </span>
+                      <IconArrowRight size={24} color="#CCC" />
+                      <span style={{ fontSize: '3rem', lineHeight: 1 }}>{symbol.exampleEmoji}</span>
+                      <span style={{ fontSize: '1.75rem', fontWeight: 700, color: COLORS.text }}>
+                        {symbol.exampleWord}
+                      </span>
                     </div>
 
                     <button
                       onClick={(e) => { e.stopPropagation(); playWord(symbol.exampleWord); }}
                       style={{
-                        height: 72, minWidth: 160,
-                        borderRadius: BORDER_RADIUS.lg,
+                        height: 72, width: 72,
+                        borderRadius: '50%',
                         backgroundColor: COLORS.primary,
                         color: COLORS.white,
                         border: 'none',
-                        fontSize: '1.25rem',
-                        fontWeight: 700,
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        gap: 8,
                         touchAction: 'manipulation',
                         boxShadow: SHADOW.md,
                       }}
+                      aria-label="Play word"
                     >
-                      <IconSpeaker size={24} color={COLORS.white} />
-                      播放
+                      <IconSpeaker size={28} color={COLORS.white} />
                     </button>
 
                     {mode === 'phoneme' ? (
                       <button
                         onClick={(e) => { e.stopPropagation(); handlePhonemeComplete(); }}
                         style={{
-                          height: 56, minWidth: 160,
-                          borderRadius: BORDER_RADIUS.lg,
+                          height: 64, width: 64,
+                          borderRadius: '50%',
                           backgroundColor: COLORS.accent,
-                          color: COLORS.text,
                           border: 'none',
-                          fontSize: '1.1rem',
-                          fontWeight: 700,
                           cursor: 'pointer',
                           touchAction: 'manipulation',
                           boxShadow: SHADOW.sm,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          gap: 8,
                         }}
+                        aria-label="完成"
                       >
-                        👍 好了！
+                        <IconThumbUp size={30} color={COLORS.text} />
                       </button>
                     ) : (
                       <button
                         onClick={(e) => { e.stopPropagation(); setDisplaySide('stroke'); }}
                         style={{
-                          height: 56, minWidth: 160,
-                          borderRadius: BORDER_RADIUS.lg,
+                          height: 64, width: 64,
+                          borderRadius: '50%',
                           backgroundColor: COLORS.accent,
-                          color: COLORS.text,
                           border: 'none',
-                          fontSize: '1.1rem',
-                          fontWeight: 700,
                           cursor: 'pointer',
                           touchAction: 'manipulation',
                           boxShadow: SHADOW.sm,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          gap: 8,
                         }}
+                        aria-label="寫字練習"
                       >
-                        寫字練習 →
+                        <IconPencil size={30} color={COLORS.text} />
                       </button>
                     )}
                   </div>
@@ -428,14 +410,10 @@ export default function BopomofoCard({ symbolId, allSymbolIds, onClose, mode = '
                   <div style={{ fontSize: '2.5rem', fontWeight: 700, color: symbol.color, lineHeight: 1 }}>
                     {symbol.symbol}
                   </div>
-                  <div style={{ fontSize: '0.85rem', color: '#999', fontWeight: 600 }}>
-                    寫字練習
-                  </div>
+                  <IconPencil size={22} color="#BBBBBB" />
                 </div>
               ) : (
-                <div style={{ fontSize: '0.85rem', color: '#999', fontWeight: 600 }}>
-                  第三步：寫字練習
-                </div>
+                <IconPencil size={22} color="#BBBBBB" />
               )}
 
               <StrokeOrderDisplay
@@ -447,24 +425,20 @@ export default function BopomofoCard({ symbolId, allSymbolIds, onClose, mode = '
               <button
                 onClick={handleMastered}
                 style={{
-                  height: 56, minWidth: 160,
-                  borderRadius: BORDER_RADIUS.lg,
+                  height: 72, width: 72,
+                  borderRadius: '50%',
                   backgroundColor: COLORS.accent,
-                  color: COLORS.text,
                   border: 'none',
-                  fontSize: '1.1rem',
-                  fontWeight: 700,
                   cursor: 'pointer',
                   touchAction: 'manipulation',
                   boxShadow: SHADOW.sm,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: 8,
                 }}
+                aria-label="我學會了"
               >
-                我學會了！
-                <IconStar size={20} />
+                <IconStar size={32} />
               </button>
             </div>
           )}
