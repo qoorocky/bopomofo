@@ -20,7 +20,7 @@ export default function HandwritingCanvas({ refPaths, accentColor }: Props) {
 
   const svgRef = useRef<SVGSVGElement>(null);
   const livePolyRef = useRef<SVGPolylineElement>(null);
-  const isDrawingRef = useRef(false);
+  const activePointerIdRef = useRef<number | null>(null);
   const currentPtsRef = useRef<Point[]>([]);
   const strokesRef = useRef<Point[][]>([]);
   const strokeScoresRef = useRef<number[]>([]);
@@ -34,9 +34,10 @@ export default function HandwritingCanvas({ refPaths, accentColor }: Props) {
   }
 
   function handlePointerDown(e: React.PointerEvent<SVGSVGElement>) {
+    if (activePointerIdRef.current !== null) return;
     e.preventDefault();
     e.currentTarget.setPointerCapture(e.pointerId);
-    isDrawingRef.current = true;
+    activePointerIdRef.current = e.pointerId;
     const pt = toSvg(e);
     currentPtsRef.current = [pt];
     if (livePolyRef.current) {
@@ -45,20 +46,20 @@ export default function HandwritingCanvas({ refPaths, accentColor }: Props) {
   }
 
   function handlePointerMove(e: React.PointerEvent) {
-    if (!isDrawingRef.current) return;
+    if (e.pointerId !== activePointerIdRef.current) return;
     e.preventDefault();
     const pt = toSvg(e);
     const prev = currentPtsRef.current[currentPtsRef.current.length - 1];
-    if (Math.hypot(pt.x - prev.x, pt.y - prev.y) < 0.8) return;
+    if (Math.hypot(pt.x - prev.x, pt.y - prev.y) < 0.4) return;
     currentPtsRef.current.push(pt);
     if (livePolyRef.current) {
       livePolyRef.current.setAttribute('points', ptsToPolyline(currentPtsRef.current));
     }
   }
 
-  function finishStroke() {
-    if (!isDrawingRef.current) return;
-    isDrawingRef.current = false;
+  function finishStroke(e: React.PointerEvent) {
+    if (e.pointerId !== activePointerIdRef.current) return;
+    activePointerIdRef.current = null;
 
     const pts = currentPtsRef.current.slice();
     currentPtsRef.current = [];
@@ -85,7 +86,7 @@ export default function HandwritingCanvas({ refPaths, accentColor }: Props) {
     strokesRef.current = [];
     strokeScoresRef.current = [];
     currentPtsRef.current = [];
-    isDrawingRef.current = false;
+    activePointerIdRef.current = null;
     if (livePolyRef.current) livePolyRef.current.setAttribute('points', '');
     setStrokes([]);
     setStrokeScores([]);
@@ -128,7 +129,6 @@ export default function HandwritingCanvas({ refPaths, accentColor }: Props) {
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={finishStroke}
-          onPointerLeave={finishStroke}
           onPointerCancel={finishStroke}
         >
           <line x1="50" y1="5" x2="50" y2="95" stroke="#ECECEC" strokeWidth="0.6" />
@@ -136,17 +136,20 @@ export default function HandwritingCanvas({ refPaths, accentColor }: Props) {
 
           {showRef && refPaths.map((d, i) => (
             <path key={i} d={d} stroke={accentColor} strokeWidth={8}
-              strokeLinecap="round" strokeLinejoin="round" fill="none" opacity={0.13} />
+              strokeLinecap="round" strokeLinejoin="round" fill="none" opacity={0.13}
+              pointerEvents="none" />
           ))}
 
           {strokes.map((pts, i) => (
             <polyline key={i} points={ptsToPolyline(pts)}
               stroke={strokeScoreColor(strokeScores[i] ?? 0)}
-              strokeWidth={7} strokeLinecap="round" strokeLinejoin="round" fill="none" opacity={0.88} />
+              strokeWidth={7} strokeLinecap="round" strokeLinejoin="round" fill="none" opacity={0.88}
+              pointerEvents="none" />
           ))}
 
           <polyline ref={livePolyRef} points=""
-            stroke="#BBBBBB" strokeWidth={7} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+            stroke="#BBBBBB" strokeWidth={7} strokeLinecap="round" strokeLinejoin="round" fill="none"
+            pointerEvents="none" />
         </svg>
 
         {/* Hint overlay when nothing drawn */}
