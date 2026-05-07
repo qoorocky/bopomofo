@@ -35,11 +35,14 @@ export default function BopomofoCard({ symbolId, allSymbolIds, onClose, mode = '
   const flipControls = useAnimation();
   const isFlipping = useRef(false);
 
-  // On symbol change: snap back to correct side, mark learning, record review, auto-play
+  // On symbol change: snap back, mark learning, record review, auto-play.
+  // Preserve current side across prev/next navigation so the user doesn't
+  // jump faces unexpectedly when switching characters.
   useEffect(() => {
     flipControls.set({ rotateY: 0 });
     isFlipping.current = false;
-    const nextSide = mode === 'stroke' ? 'stroke' : (phonemeHeard[currentSymbolId] ? 'word' : 'phoneme');
+    const nextSide: 'phoneme' | 'word' | 'stroke' =
+      mode === 'stroke' ? 'stroke' : displaySide === 'stroke' ? 'phoneme' : displaySide;
     setDisplaySide(nextSide);
     markLearning(currentSymbolId);
     recordReview(currentSymbolId);
